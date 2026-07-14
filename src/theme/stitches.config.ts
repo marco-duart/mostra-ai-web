@@ -22,8 +22,11 @@ export const {
       textSubtle: "#71717a",
       // Brand (overridable per-store at runtime via CSS vars)
       primary: "var(--store-primary, #E4572E)",
-      primaryContrast: "#ffffff",
+      primaryContrast: "var(--store-primary-contrast, #ffffff)",
+      primarySoft: "var(--store-primary-soft, rgba(228,87,46,0.18))",
+      primaryBorder: "var(--store-primary-border, rgba(228,87,46,0.45))",
       secondary: "var(--store-secondary, #1A1A1A)",
+      secondarySoft: "var(--store-secondary-soft, #171718)",
       danger: "#ef4444",
       success: "#22c55e",
       warning: "#f59e0b",
@@ -98,5 +101,9 @@ export const globalStyles = globalCss({
   },
   a: { color: "inherit", textDecoration: "none" },
   button: { fontFamily: "inherit" },
+  "a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible": {
+    outline: "2px solid $colors$primaryBorder",
+    outlineOffset: "2px",
+  },
   img: { display: "block", maxWidth: "100%" },
 });

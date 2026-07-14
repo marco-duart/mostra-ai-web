@@ -8,10 +8,16 @@ const Banner = styled("div", {
   position: "relative",
   width: "100%",
   aspectRatio: "16 / 9",
-  backgroundColor: "$secondary",
+  backgroundColor: "$secondarySoft",
   backgroundSize: "cover",
   backgroundPosition: "center",
   overflow: "hidden",
+  "&::after": {
+    content: "",
+    position: "absolute",
+    inset: 0,
+    background: "linear-gradient(180deg, rgba(15,15,16,0.2) 20%, rgba(15,15,16,0.65) 100%)",
+  },
 });
 
 const HeaderInner = styled("div", {
@@ -73,7 +79,20 @@ const SocialLink = styled("a", {
   fontSize: "$sm",
   fontWeight: "$medium",
   color: "$text",
-  "&:hover": { backgroundColor: "$primary", color: "$primaryContrast" },
+  transition: "background-color 140ms ease, color 140ms ease, border-color 140ms ease",
+  "&:hover": {
+    backgroundColor: "$primarySoft",
+    color: "$primary",
+    borderColor: "$primaryBorder",
+  },
+  "&:focus-visible": {
+    outline: "none",
+    borderColor: "$primaryBorder",
+    boxShadow: "0 0 0 2px $colors$primaryBorder",
+  },
+  "&:active": {
+    transform: "translateY(1px)",
+  },
 });
 
 interface Props {

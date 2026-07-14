@@ -13,7 +13,7 @@ const CategoryTitle = styled("h3", {
   fontWeight: "$bold",
   color: "$text",
   paddingBottom: "$2",
-  borderBottom: "1px solid $border",
+  borderBottom: "1px solid $primaryBorder",
 });
 
 const ProductCard = styled("article", {

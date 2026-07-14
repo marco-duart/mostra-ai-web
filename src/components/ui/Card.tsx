@@ -6,6 +6,7 @@ export const Card = styled("div", {
   borderRadius: "$lg",
   padding: "$5",
   boxShadow: "$sm",
+  transition: "border-color 140ms ease, background-color 140ms ease",
 });
 
 export const Section = styled("section", {
@@ -28,6 +29,7 @@ export const Badge = styled("span", {
   alignItems: "center",
   gap: "$1",
   padding: "$1 $3",
+  border: "1px solid transparent",
   borderRadius: "$pill",
   fontSize: "$xs",
   fontWeight: "$semibold",
@@ -37,7 +39,11 @@ export const Badge = styled("span", {
     tone: {
       success: { backgroundColor: "rgba(34,197,94,0.15)", color: "$success" },
       danger: { backgroundColor: "rgba(239,68,68,0.15)", color: "$danger" },
-      brand: { backgroundColor: "$primary", color: "$primaryContrast" },
+      brand: {
+        backgroundColor: "$primarySoft",
+        color: "$primary",
+        borderColor: "$primaryBorder",
+      },
     },
   },
 });

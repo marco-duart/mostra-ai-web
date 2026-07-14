@@ -18,6 +18,9 @@ export const Button = styled("button", {
   textAlign: "center",
   maxWidth: "100%",
   "&:disabled": { opacity: 0.55, cursor: "not-allowed" },
+  "&:focus-visible": {
+    boxShadow: "0 0 0 2px $colors$primaryBorder",
+  },
   "&:active:not(:disabled)": { transform: "scale(0.98)" },
   variants: {
     variant: {

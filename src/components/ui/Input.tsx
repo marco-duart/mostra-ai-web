@@ -11,7 +11,10 @@ export const Input = styled("input", {
   border: "1px solid $border",
   fontSize: "$md",
   "&::placeholder": { color: "$textSubtle" },
-  "&:focus": { borderColor: "$primary" },
+  "&:focus": {
+    borderColor: "$primaryBorder",
+    boxShadow: "0 0 0 1px $colors$primaryBorder",
+  },
 });
 
 export const Textarea = styled("textarea", {
@@ -28,7 +31,10 @@ export const Textarea = styled("textarea", {
   minHeight: 120,
   resize: "vertical",
   "&::placeholder": { color: "$textSubtle" },
-  "&:focus": { borderColor: "$primary" },
+  "&:focus": {
+    borderColor: "$primaryBorder",
+    boxShadow: "0 0 0 1px $colors$primaryBorder",
+  },
 });
 
 export const FieldLabel = styled("label", {

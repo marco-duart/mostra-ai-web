@@ -38,7 +38,19 @@ const LinkRow = styled("a", {
   color: "$text",
   fontSize: "$md",
   fontWeight: "$medium",
-  "&:hover": { borderColor: "$primary" },
+  transition: "background-color 140ms ease, border-color 140ms ease",
+  "&:hover": {
+    backgroundColor: "$primarySoft",
+    borderColor: "$primaryBorder",
+  },
+  "&:focus-visible": {
+    outline: "none",
+    borderColor: "$primaryBorder",
+    boxShadow: "0 0 0 2px $colors$primaryBorder",
+  },
+  "&:active": {
+    transform: "translateY(1px)",
+  },
 });
 
 const IconWrap = styled("span", {

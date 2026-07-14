@@ -7,8 +7,9 @@ import { StoreHeader } from "@/components/store/StoreHeader";
 import { LocationsList } from "@/components/store/LocationsList";
 import { MenuList } from "@/components/store/MenuList";
 import { ContactForm } from "@/components/store/ContactForm";
+import { LogoSpinner } from "@/components/ui/LogoSpinner";
 import { useStoreCatalog } from "@/hooks/useStoreCatalog";
-import { safeHex } from "@/utils/format";
+import { getStoreThemeVars } from "@/utils/format";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 
 const CenterState = styled("div", {
@@ -37,13 +38,10 @@ export function StorePage() {
 
   const themeVars = useMemo(() => {
     if (state.status !== "success") return null;
-    return {
-      "--store-primary": safeHex(state.data.store.theme_primary_color, "#E4572E"),
-      "--store-secondary": safeHex(
-        state.data.store.theme_secondary_color,
-        "#1A1A1A",
-      ),
-    } as React.CSSProperties;
+    return getStoreThemeVars(
+      state.data.store.theme_primary_color,
+      state.data.store.theme_secondary_color,
+    ) as React.CSSProperties;
   }, [state]);
 
   useEffect(() => {
@@ -53,7 +51,11 @@ export function StorePage() {
   }, [state]);
 
   if (state.status === "loading") {
-    return <CenterState>Carregando cardápio…</CenterState>;
+    return (
+      <CenterState>
+        <LogoSpinner label="Carregando cardapio..." />
+      </CenterState>
+    );
   }
   if (state.status === "not_found") {
     return <NotFoundPage />;

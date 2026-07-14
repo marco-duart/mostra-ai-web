@@ -42,9 +42,25 @@ const MapsLink = styled("a", {
   alignItems: "center",
   gap: "$1",
   marginTop: "$3",
+  padding: "$1 $2",
+  borderRadius: "$pill",
+  border: "1px solid transparent",
   fontSize: "$sm",
   fontWeight: "$medium",
   color: "$primary",
+  transition: "background-color 140ms ease, border-color 140ms ease",
+  "&:hover": {
+    backgroundColor: "$primarySoft",
+    borderColor: "$primaryBorder",
+  },
+  "&:focus-visible": {
+    outline: "none",
+    borderColor: "$primaryBorder",
+    boxShadow: "0 0 0 2px $colors$primaryBorder",
+  },
+  "&:active": {
+    transform: "translateY(1px)",
+  },
 });
 
 interface Props {
