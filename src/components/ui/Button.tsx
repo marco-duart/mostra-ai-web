@@ -2,6 +2,7 @@ import { styled } from "@/theme/stitches.config";
 
 export const Button = styled("button", {
   all: "unset",
+  boxSizing: "border-box",
   cursor: "pointer",
   display: "inline-flex",
   alignItems: "center",
@@ -15,6 +16,7 @@ export const Button = styled("button", {
   transition: "transform 120ms ease, opacity 120ms ease, background 120ms ease",
   userSelect: "none",
   textAlign: "center",
+  maxWidth: "100%",
   "&:disabled": { opacity: 0.55, cursor: "not-allowed" },
   "&:active:not(:disabled)": { transform: "scale(0.98)" },
   variants: {

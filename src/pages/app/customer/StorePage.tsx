@@ -78,19 +78,19 @@ export function StorePage() {
 
         {message && <Banner>{message}</Banner>}
 
+        {menu.length > 0 && (
+          <Section>
+            <SectionTitle>Cardápio</SectionTitle>
+            <MenuList menu={menu} />
+          </Section>
+        )}
+
         {(current_location || locations.length > 0) && (
           <Section>
             <SectionTitle>Onde encontrar</SectionTitle>
             <LocationsList
               locations={locations.length ? locations : current_location ? [current_location] : []}
             />
-          </Section>
-        )}
-
-        {menu.length > 0 && (
-          <Section>
-            <SectionTitle>Cardápio</SectionTitle>
-            <MenuList menu={menu} />
           </Section>
         )}
 

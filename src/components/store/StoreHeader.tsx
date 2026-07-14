@@ -11,24 +11,30 @@ const Banner = styled("div", {
   backgroundColor: "$secondary",
   backgroundSize: "cover",
   backgroundPosition: "center",
+  overflow: "hidden",
 });
 
 const HeaderInner = styled("div", {
   padding: "$4",
   paddingTop: 0,
-  marginTop: "-56px",
+  marginTop: "-44px",
   display: "flex",
   flexDirection: "column",
   alignItems: "flex-start",
   gap: "$3",
+  position: "relative",
+  zIndex: 1,
+  "@sm": {
+    marginTop: "-56px",
+  },
 });
 
 const LogoWrap = styled("div", {
-  width: 96,
-  height: 96,
+  width: 84,
+  height: 84,
   borderRadius: "$lg",
   backgroundColor: "$surface",
-  border: "3px solid $bg",
+  border: "3px solid $surface",
   boxShadow: "$md",
   overflow: "hidden",
   display: "grid",
@@ -36,6 +42,11 @@ const LogoWrap = styled("div", {
   color: "$textMuted",
   fontWeight: "$bold",
   fontSize: "$2xl",
+  flexShrink: 0,
+  "@sm": {
+    width: 96,
+    height: 96,
+  },
 });
 
 const StoreName = styled("h1", {
