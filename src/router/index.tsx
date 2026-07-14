@@ -1,0 +1,1 @@
+export { App as Router } from "@/App";
