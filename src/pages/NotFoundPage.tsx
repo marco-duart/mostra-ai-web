@@ -84,7 +84,7 @@ export function NotFoundPage() {
           <SectionTitle>É produtor(a)?</SectionTitle>
           <p style={{ marginTop: 0, color: "#a1a1aa" }}>
             Cadastre seu negócio no app <strong>{SITE.mobileApp.name}</strong> e crie
-            seu cardápio digital em minutos — ideal para bares, feirantes e pequenos
+            seu catálogo de produtos digital em minutos — ideal para bares, feirantes e pequenos
             negócios.
           </p>
           <AppStores>
