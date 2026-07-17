@@ -163,6 +163,9 @@ export function PrivacyPage() {
               <li>
                 Instagram: <a href={SITE.personalInstagram}>{SITE.personalInstagram}</a>
               </li>
+              <li>
+                E-mail: <a href="mailto:marcoaurelioduartebezerra@gmail.com">marcoaurelioduartebezerra@gmail.com</a>
+              </li>
             </ul>
 
             <h2>10. Atualizações desta política</h2>
