@@ -214,10 +214,6 @@ export function ProducerLoginPage() {
     return `Passo ${registerStep + 1} de 5`;
   }, [mode, registerStep]);
 
-  if (isAuthenticated) {
-    return <Navigate to="/producer" replace />;
-  }
-
   const onLogin = async (e: FormEvent) => {
     e.preventDefault();
     if (!loginForm.email.trim() || !loginForm.password.trim()) {
@@ -408,6 +404,10 @@ export function ProducerLoginPage() {
       </FieldGroup>
     );
   }, [registerForm, registerStep]);
+
+  if (isAuthenticated) {
+    return <Navigate to="/producer" replace />;
+  }
 
   return (
     <Wrap>
