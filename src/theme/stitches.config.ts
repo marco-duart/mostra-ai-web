@@ -21,10 +21,10 @@ export const {
       textMuted: "#a1a1aa",
       textSubtle: "#71717a",
       // Brand (overridable per-store at runtime via CSS vars)
-      primary: "var(--store-primary, #E4572E)",
+      primary: "var(--store-primary, #403FB9)",
       primaryContrast: "var(--store-primary-contrast, #ffffff)",
-      primarySoft: "var(--store-primary-soft, rgba(228,87,46,0.18))",
-      primaryBorder: "var(--store-primary-border, rgba(228,87,46,0.45))",
+      primarySoft: "var(--store-primary-soft, rgba(64,63,185,0.18))",
+      primaryBorder: "var(--store-primary-border, rgba(64,63,185,0.45))",
       secondary: "var(--store-secondary, #1A1A1A)",
       secondarySoft: "var(--store-secondary-soft, #171718)",
       danger: "#ef4444",

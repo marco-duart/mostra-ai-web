@@ -26,7 +26,7 @@ const Frame = styled("div", {
       spotlight: {
         border: "2px solid $primaryBorder",
         backgroundColor: "$surface",
-        boxShadow: "0 8px 20px rgba(228,87,46,0.24)",
+        boxShadow: "0 8px 20px rgba(64,63,185,0.24)",
       },
     },
   },

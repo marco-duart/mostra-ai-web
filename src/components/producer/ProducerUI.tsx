@@ -4,7 +4,7 @@ import { ProducerBrandLogo } from "@/components/producer/ProducerBrandLogo";
 export const ProducerPage = styled("main", {
   minHeight: "100dvh",
   background:
-    "radial-gradient(1200px 400px at 10% -10%, rgba(228,87,46,0.22), transparent), radial-gradient(900px 320px at 90% 0%, rgba(34,197,94,0.12), transparent), $bg",
+    "radial-gradient(1200px 400px at 10% -10%, rgba(64,63,185,0.22), transparent), radial-gradient(900px 320px at 90% 0%, rgba(239,62,65,0.12), transparent), $bg",
   color: "$text",
 });
 
