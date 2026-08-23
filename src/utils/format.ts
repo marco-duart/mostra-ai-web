@@ -1,3 +1,5 @@
+import type { OfferingType } from "@/types/domain";
+
 export function formatPrice(value: number): string {
   try {
     return new Intl.NumberFormat("pt-BR", {
@@ -72,7 +74,7 @@ export function getStoreThemeVars(
   primaryInput: string | undefined | null,
   secondaryInput: string | undefined | null,
 ): Record<string, string> {
-  const primary = safeHex(primaryInput, "#E4572E");
+  const primary = safeHex(primaryInput, "#403FB9");
   const secondary = safeHex(secondaryInput, "#1A1A1A");
 
   // Blend producer colors into semantic shades so brand presence stays controlled.
@@ -114,4 +116,18 @@ export function deliveryModeLabel(mode: string): string {
     default:
       return mode;
   }
+}
+
+/**
+ * Resolve o rotulo de exibicao do catalogo da loja a partir do que ela oferece.
+ * - SERVICE -> "Serviços"
+ * - PRODUCT ou BOTH com consumo -> "Cardápio"
+ * - PRODUCT ou BOTH sem consumo -> "Catálogo"
+ */
+export function resolveCatalogLabel(
+  offeringType: OfferingType,
+  isConsumption: boolean | null,
+): string {
+  if (offeringType === "SERVICE") return "Serviços";
+  return isConsumption ? "Cardápio" : "Catálogo";
 }
