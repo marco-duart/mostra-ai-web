@@ -1,15 +1,28 @@
-import { useMemo, type PropsWithChildren } from "react";
+import { useMemo, type CSSProperties, type PropsWithChildren } from "react";
 import { Link, NavLink } from "react-router-dom";
-import { LayoutDashboard, MapPin, Package, Palette, Tags, LogOut, Store } from "lucide-react";
+import {
+  LayoutDashboard,
+  MapPin,
+  Package,
+  Palette,
+  Tags,
+  LogOut,
+  Store,
+  Users,
+  QrCode,
+  Calendar,
+} from "lucide-react";
 import { styled } from "@/theme/stitches.config";
 import { Button } from "@/components/ui/Button";
 import { useProducerAuth } from "@/contexts/producerAuth";
+import { useProducerStoreQuery } from "@/hooks/useProducerStore";
 import { ProducerBrandLogo } from "@/components/producer/ProducerBrandLogo";
+import { getStoreThemeVars } from "@/utils/format";
 
 const Wrap = styled("div", {
   minHeight: "100dvh",
   background:
-    "radial-gradient(1200px 400px at 8% -10%, rgba(228,87,46,0.2), transparent), radial-gradient(1100px 420px at 92% 0%, rgba(47,128,237,0.12), transparent), $bg",
+    "radial-gradient(1200px 400px at 8% -10%, rgba(64,63,185,0.2), transparent), radial-gradient(1100px 420px at 92% 0%, rgba(239,62,65,0.12), transparent), $bg",
 });
 
 const Header = styled("header", {
@@ -111,7 +124,18 @@ const StoreName = styled("small", {
 
 export function ProducerShell({ children }: PropsWithChildren) {
   const { store, signOut } = useProducerAuth();
+  const storeQuery = useProducerStoreQuery();
   const catalogUrl = store?.slug ? `http://mostraai.app.br/${store.slug}` : "http://mostraai.app.br";
+
+  // Aplica as cores de tema definidas no perfil da loja em toda a area do produtor,
+  // nao apenas na pagina publica do cliente final.
+  const themeVars = useMemo(() => {
+    if (!storeQuery.data) return undefined;
+    return getStoreThemeVars(
+      storeQuery.data.themePrimaryColor,
+      storeQuery.data.themeSecondaryColor,
+    ) as CSSProperties;
+  }, [storeQuery.data]);
 
   const nav = useMemo(
     () => [
@@ -120,12 +144,15 @@ export function ProducerShell({ children }: PropsWithChildren) {
       { to: "/producer/products", label: "Produtos", icon: <Package size={16} /> },
       { to: "/producer/categories", label: "Categorias", icon: <Tags size={16} /> },
       { to: "/producer/locations", label: "Locais", icon: <MapPin size={16} /> },
+      { to: "/producer/team", label: "Equipe", icon: <Users size={16} /> },
+      { to: "/producer/tables", label: "Mesas", icon: <QrCode size={16} /> },
+      { to: "/producer/agenda", label: "Agenda", icon: <Calendar size={16} /> },
     ],
     [],
   );
 
   return (
-    <Wrap>
+    <Wrap style={themeVars}>
       <Header>
         <HeaderInner>
           <div>
