@@ -1,12 +1,16 @@
-import { useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import axios from "axios";
 import { styled } from "@/theme/stitches.config";
 import { ProducerBrandLogo } from "@/components/producer/ProducerBrandLogo";
 import { useProducerAuth } from "@/contexts/producerAuth";
-import { useProducerLoginMutation, useProducerRegisterMutation } from "@/hooks/useProducerAuthMutations";
-import type { DocumentType } from "@/types/producer";
+import {
+  useProducerCreateStoreMutation,
+  useProducerLoginMutation,
+  useProducerRegisterMutation,
+} from "@/hooks/useProducerAuthMutations";
+import type { DocumentType, OfferingType } from "@/types/producer";
 
 const Wrap = styled("main", {
   minHeight: "100dvh",
@@ -14,7 +18,7 @@ const Wrap = styled("main", {
   placeItems: "center",
   padding: "$4",
   background:
-    "radial-gradient(900px 360px at 8% -4%, rgba(228,87,46,0.24), transparent), radial-gradient(1000px 420px at 100% 0%, rgba(47,128,237,0.15), transparent), #FBFAF5",
+    "radial-gradient(900px 360px at 8% -4%, rgba(64,63,185,0.24), transparent), radial-gradient(1000px 420px at 100% 0%, rgba(239,62,65,0.15), transparent), #FBFAF5",
 });
 
 const Card = styled("section", {
@@ -39,7 +43,7 @@ const Step = styled("small", {
   fontWeight: "$semibold",
   letterSpacing: "0.08em",
   textTransform: "uppercase",
-  color: "#E4572E",
+  color: "#403FB9",
 });
 
 const Title = styled("h1", {
@@ -97,8 +101,8 @@ const FieldInput = styled("input", {
   fontSize: "$md",
   outline: "none",
   "&:focus": {
-    borderColor: "#E4572E",
-    boxShadow: "0 0 0 3px rgba(228,87,46,0.15)",
+    borderColor: "#403FB9",
+    boxShadow: "0 0 0 3px rgba(64,63,185,0.15)",
   },
 });
 
@@ -112,9 +116,53 @@ const FieldSelect = styled("select", {
   fontSize: "$md",
   outline: "none",
   "&:focus": {
-    borderColor: "#E4572E",
-    boxShadow: "0 0 0 3px rgba(228,87,46,0.15)",
+    borderColor: "#403FB9",
+    boxShadow: "0 0 0 3px rgba(64,63,185,0.15)",
   },
+});
+
+const OptionGrid = styled("div", {
+  display: "grid",
+  gap: "$2",
+});
+
+const OptionButton = styled("button", {
+  all: "unset",
+  cursor: "pointer",
+  boxSizing: "border-box",
+  width: "100%",
+  padding: "$3 $4",
+  borderRadius: "$md",
+  border: "1px solid #E6E4DC",
+  backgroundColor: "#FFFFFF",
+  color: "#1A1A1A",
+  display: "flex",
+  flexDirection: "column",
+  gap: 2,
+  transition: "background-color 140ms ease, border-color 140ms ease",
+  "&:focus-visible": {
+    outline: "none",
+    borderColor: "#403FB9",
+    boxShadow: "0 0 0 3px rgba(64,63,185,0.15)",
+  },
+  variants: {
+    selected: {
+      true: {
+        borderColor: "#403FB9",
+        backgroundColor: "rgba(64,63,185,0.08)",
+      },
+    },
+  },
+});
+
+const OptionButtonLabel = styled("strong", {
+  fontSize: "$sm",
+  color: "#1A1A1A",
+});
+
+const OptionButtonHint = styled("span", {
+  fontSize: "$xs",
+  color: "#6B6B6B",
 });
 
 const Actions = styled("div", {
@@ -138,7 +186,7 @@ const ActionButton = styled("button", {
   variants: {
     variant: {
       primary: {
-        backgroundColor: "#E4572E",
+        backgroundColor: "#403FB9",
         color: "#FFFFFF",
       },
       secondary: {
@@ -174,10 +222,59 @@ type RegisterForm = {
   name: string;
   document: string;
   documentType: DocumentType;
+  offeringType: OfferingType | null;
+  consumption: "YES" | "NO" | null;
   whatsapp: string;
 };
 
-type ScreenMode = "welcome" | "login" | "register";
+type CreateStoreForm = {
+  name: string;
+  whatsapp: string;
+  offeringType: OfferingType | null;
+  consumption: "YES" | "NO" | null;
+};
+
+const EMPTY_CREATE_STORE_FORM: CreateStoreForm = {
+  name: "",
+  whatsapp: "",
+  offeringType: null,
+  consumption: null,
+};
+
+type ScreenMode = "welcome" | "login" | "register" | "createStore";
+
+type RegisterStepKey =
+  | "name"
+  | "whatsapp"
+  | "document"
+  | "offering"
+  | "consumption"
+  | "email"
+  | "password";
+
+const requiresConsumptionStep = (offeringType: OfferingType | null) =>
+  offeringType === "PRODUCT" || offeringType === "BOTH";
+
+const buildRegisterSteps = (offeringType: OfferingType | null): RegisterStepKey[] => [
+  "name",
+  "whatsapp",
+  "document",
+  "offering",
+  ...(requiresConsumptionStep(offeringType) ? (["consumption"] as const) : []),
+  "email",
+  "password",
+];
+
+const OFFERING_TYPE_OPTIONS: { value: OfferingType; label: string; hint: string }[] = [
+  { value: "PRODUCT", label: "Produto", hint: "Vendo itens físicos ou comida." },
+  { value: "SERVICE", label: "Serviço", hint: "Presto um serviço, sem produto." },
+  { value: "BOTH", label: "Ambos", hint: "Vendo produtos e presto serviços." },
+];
+
+const CONSUMPTION_OPTIONS: { value: "YES" | "NO"; label: string; hint: string }[] = [
+  { value: "YES", label: "Sim, são de consumo", hint: "Comida, bebida ou similares." },
+  { value: "NO", label: "Não são de consumo", hint: "Mercadorias em geral." },
+];
 
 function parseApiMessage(err: unknown): string {
   if (!axios.isAxiosError(err)) return "Não foi possível concluir agora.";
@@ -190,14 +287,24 @@ function parseApiMessage(err: unknown): string {
   return err.message || "Erro inesperado.";
 }
 
+// Mesma checagem do app mobile (isDocumentConflict em register.tsx): um
+// conflito 409 mencionando CPF/CNPJ na criação da conta indica que a
+// pessoa já tem cadastro, então sugerimos login em vez de deixar o erro
+// genérico confundir quem está tentando criar a loja de novo.
+function isDocumentConflict(err: unknown): boolean {
+  if (!axios.isAxiosError(err) || err.response?.status !== 409) return false;
+  return /cpf|cnpj/i.test(parseApiMessage(err));
+}
+
 export function ProducerLoginPage() {
   const navigate = useNavigate();
-  const { isAuthenticated, signIn } = useProducerAuth();
+  const { isAuthenticated, store, signIn, setStore, signOut } = useProducerAuth();
   const [mode, setMode] = useState<ScreenMode>("welcome");
   const [registerStep, setRegisterStep] = useState(0);
 
   const login = useProducerLoginMutation();
   const register = useProducerRegisterMutation();
+  const createStore = useProducerCreateStoreMutation();
 
   const [loginForm, setLoginForm] = useState<LoginForm>({ email: "", password: "" });
   const [registerForm, setRegisterForm] = useState<RegisterForm>({
@@ -206,13 +313,31 @@ export function ProducerLoginPage() {
     name: "",
     document: "",
     documentType: "CPF",
+    offeringType: null,
+    consumption: null,
     whatsapp: "",
   });
+  const [createStoreForm, setCreateStoreForm] = useState<CreateStoreForm>(EMPTY_CREATE_STORE_FORM);
+
+  // Conta autenticada mas sem loja (ex.: recarregou a página no meio do
+  // fluxo, ou entrou com uma conta criada só pelo app Cliente) - manda
+  // direto pra criação da loja, igual ao app mobile faz na raiz do app.
+  useEffect(() => {
+    if (isAuthenticated && !store && mode === "welcome") {
+      setMode("createStore");
+    }
+  }, [isAuthenticated, store, mode]);
+
+  const registerSteps = useMemo(
+    () => buildRegisterSteps(registerForm.offeringType),
+    [registerForm.offeringType],
+  );
+  const registerStepKey = registerSteps[registerStep] ?? registerSteps[registerSteps.length - 1];
 
   const stepText = useMemo(() => {
     if (mode !== "register") return null;
-    return `Passo ${registerStep + 1} de 5`;
-  }, [mode, registerStep]);
+    return `Passo ${registerStep + 1} de ${registerSteps.length}`;
+  }, [mode, registerStep, registerSteps.length]);
 
   const onLogin = async (e: FormEvent) => {
     e.preventDefault();
@@ -226,28 +351,124 @@ export function ProducerLoginPage() {
         password: loginForm.password,
       });
       signIn(data);
-      toast.success("Bem-vindo ao painel.");
-      navigate("/producer", { replace: true });
+      if (data.store) {
+        toast.success("Bem-vindo ao painel.");
+        navigate("/producer", { replace: true });
+      } else {
+        // Conta autenticada mas sem loja ainda (ex.: criada só pelo app
+        // Cliente) - manda pra criação da loja em vez do painel, igual ao
+        // app mobile (login.tsx: router.replace(data.store ? ... )).
+        toast("Falta só criar sua loja para continuar.");
+        setMode("createStore");
+      }
     } catch (err) {
       toast.error(parseApiMessage(err));
     }
   };
 
+  // Cadastro em duas chamadas (POST /auth/register + POST /producer/store),
+  // igual ao app mobile (register.tsx): o servidor não aceita mais um único
+  // payload combinado de conta+loja.
   const onRegister = async () => {
+    if (!registerForm.offeringType) {
+      toast.error("Escolha o que sua loja oferece.");
+      return;
+    }
+
+    const needsConsumption = requiresConsumptionStep(registerForm.offeringType);
+    if (needsConsumption && !registerForm.consumption) {
+      toast.error("Informe se seus produtos são de consumo.");
+      return;
+    }
+
+    let account;
     try {
-      const data = await register.mutateAsync({
+      account = await register.mutateAsync({
         email: registerForm.email.trim(),
         password: registerForm.password,
         name: registerForm.name.trim(),
         document: registerForm.document.trim(),
         documentType: registerForm.documentType,
-        whatsapp: registerForm.whatsapp.trim(),
         acceptedAppTerms: true,
-        acceptedAccountTerms: true,
         acceptedLgpd: true,
       });
-      signIn(data);
-      toast.success("Conta criada com sucesso.");
+    } catch (err) {
+      if (isDocumentConflict(err)) {
+        toast.error("Você já tem uma conta com este CPF/CNPJ. Faça login para continuar.");
+        setMode("login");
+        return;
+      }
+      toast.error(parseApiMessage(err));
+      return;
+    }
+
+    // Conta criada - autentica já (sem loja ainda) pra: (1) a próxima
+    // chamada (POST /producer/store) ter o token disponível, e (2) não
+    // perder a sessão caso a criação da loja falhe logo abaixo.
+    signIn({ accessToken: account.accessToken, store: null });
+
+    const storeDto = {
+      name: registerForm.name.trim(),
+      whatsapp: registerForm.whatsapp.trim(),
+      offeringType: registerForm.offeringType,
+      ...(needsConsumption ? { isConsumption: registerForm.consumption === "YES" } : {}),
+      acceptedAccountTerms: true,
+    };
+
+    try {
+      const newStore = await createStore.mutateAsync(storeDto);
+      setStore(newStore);
+      toast.success("Conta e loja criadas com sucesso.");
+      navigate("/producer", { replace: true });
+    } catch (err) {
+      toast.error(`Sua conta foi criada, mas não deu para criar a loja agora: ${parseApiMessage(err)}`);
+      // Mantém a sessão (conta autenticada sem loja) e leva pra tela de
+      // criar loja, sem precisar cadastrar a conta de novo.
+      setCreateStoreForm({
+        name: storeDto.name,
+        whatsapp: storeDto.whatsapp,
+        offeringType: storeDto.offeringType,
+        consumption: registerForm.consumption,
+      });
+      setMode("createStore");
+    }
+  };
+
+  const onCreateStore = async (event: FormEvent) => {
+    event.preventDefault();
+
+    if (createStoreForm.name.trim().length < 2) {
+      toast.error("Digite o nome da loja com pelo menos 2 letras.");
+      return;
+    }
+
+    const digits = createStoreForm.whatsapp.replace(/\D/g, "");
+    if (digits.length < 10) {
+      toast.error("Digite um WhatsApp válido com DDD.");
+      return;
+    }
+
+    if (!createStoreForm.offeringType) {
+      toast.error("Escolha o que sua loja oferece.");
+      return;
+    }
+
+    const needsConsumption = requiresConsumptionStep(createStoreForm.offeringType);
+    if (needsConsumption && !createStoreForm.consumption) {
+      toast.error("Informe se seus produtos são de consumo.");
+      return;
+    }
+
+    try {
+      const newStore = await createStore.mutateAsync({
+        name: createStoreForm.name.trim(),
+        whatsapp: digits.startsWith("55") ? digits : `55${digits}`,
+        offeringType: createStoreForm.offeringType,
+        ...(needsConsumption ? { isConsumption: createStoreForm.consumption === "YES" } : {}),
+        acceptedAccountTerms: true,
+      });
+      setStore(newStore);
+      toast.success("Loja criada com sucesso.");
       navigate("/producer", { replace: true });
     } catch (err) {
       toast.error(parseApiMessage(err));
@@ -256,12 +477,13 @@ export function ProducerLoginPage() {
 
   const nextRegisterStep = async (event: FormEvent) => {
     event.preventDefault();
-    if (registerStep === 0 && registerForm.name.trim().length < 2) {
+
+    if (registerStepKey === "name" && registerForm.name.trim().length < 2) {
       toast.error("Digite o nome da loja com pelo menos 2 letras.");
       return;
     }
 
-    if (registerStep === 1) {
+    if (registerStepKey === "whatsapp") {
       const digits = registerForm.whatsapp.replace(/\D/g, "");
       if (digits.length < 10) {
         toast.error("Digite um WhatsApp válido com DDD.");
@@ -274,7 +496,7 @@ export function ProducerLoginPage() {
       }));
     }
 
-    if (registerStep === 2) {
+    if (registerStepKey === "document") {
       const clean = registerForm.document.toUpperCase().replace(/[^0-9A-Z]/g, "");
       const inferredType: DocumentType | null = clean.length === 11 ? "CPF" : clean.length >= 14 ? "CNPJ" : null;
       const nextType = registerForm.documentType || inferredType;
@@ -290,12 +512,22 @@ export function ProducerLoginPage() {
       }));
     }
 
-    if (registerStep === 3 && !/^\S+@\S+\.\S+$/.test(registerForm.email.trim())) {
+    if (registerStepKey === "offering" && !registerForm.offeringType) {
+      toast.error("Escolha o que sua loja oferece.");
+      return;
+    }
+
+    if (registerStepKey === "consumption" && !registerForm.consumption) {
+      toast.error("Informe se seus produtos são de consumo.");
+      return;
+    }
+
+    if (registerStepKey === "email" && !/^\S+@\S+\.\S+$/.test(registerForm.email.trim())) {
       toast.error("Informe um e-mail válido.");
       return;
     }
 
-    if (registerStep === 4) {
+    if (registerStepKey === "password") {
       if (registerForm.password.length < 6) {
         toast.error("A senha deve ter pelo menos 6 caracteres.");
         return;
@@ -308,7 +540,7 @@ export function ProducerLoginPage() {
   };
 
   const registerField = useMemo(() => {
-    if (registerStep === 0) {
+    if (registerStepKey === "name") {
       return (
         <FieldGroup>
           <FieldLabel htmlFor="register_name">Como sua loja se chama?</FieldLabel>
@@ -323,7 +555,7 @@ export function ProducerLoginPage() {
       );
     }
 
-    if (registerStep === 1) {
+    if (registerStepKey === "whatsapp") {
       return (
         <FieldGroup>
           <FieldLabel htmlFor="register_whatsapp">Qual seu WhatsApp?</FieldLabel>
@@ -339,7 +571,7 @@ export function ProducerLoginPage() {
       );
     }
 
-    if (registerStep === 2) {
+    if (registerStepKey === "document") {
       return (
         <>
           <FieldGroup>
@@ -373,7 +605,58 @@ export function ProducerLoginPage() {
       );
     }
 
-    if (registerStep === 3) {
+    if (registerStepKey === "offering") {
+      return (
+        <FieldGroup>
+          <FieldLabel>O que sua loja oferece?</FieldLabel>
+          <OptionGrid>
+            {OFFERING_TYPE_OPTIONS.map((option) => (
+              <OptionButton
+                key={option.value}
+                type="button"
+                selected={registerForm.offeringType === option.value}
+                onClick={() =>
+                  setRegisterForm((current) => ({
+                    ...current,
+                    offeringType: option.value,
+                    consumption: requiresConsumptionStep(option.value) ? current.consumption : null,
+                  }))
+                }
+              >
+                <OptionButtonLabel>{option.label}</OptionButtonLabel>
+                <OptionButtonHint>{option.hint}</OptionButtonHint>
+              </OptionButton>
+            ))}
+          </OptionGrid>
+        </FieldGroup>
+      );
+    }
+
+    if (registerStepKey === "consumption") {
+      return (
+        <FieldGroup>
+          <FieldLabel>Seus produtos são de consumo?</FieldLabel>
+          <FieldHint>Comida e bebida contam como consumo.</FieldHint>
+          <OptionGrid>
+            {CONSUMPTION_OPTIONS.map((option) => (
+              <OptionButton
+                key={option.value}
+                type="button"
+                selected={registerForm.consumption === option.value}
+                onClick={() =>
+                  setRegisterForm((current) => ({ ...current, consumption: option.value }))
+                }
+              >
+                <OptionButtonLabel>{option.label}</OptionButtonLabel>
+                <OptionButtonHint>{option.hint}</OptionButtonHint>
+              </OptionButton>
+            ))}
+          </OptionGrid>
+        </FieldGroup>
+      );
+    }
+
+    if (registerStepKey === "email") {
       return (
         <FieldGroup>
           <FieldLabel htmlFor="register_email">Qual seu e-mail?</FieldLabel>
@@ -403,9 +686,9 @@ export function ProducerLoginPage() {
         />
       </FieldGroup>
     );
-  }, [registerForm, registerStep]);
+  }, [registerForm, registerStepKey]);
 
-  if (isAuthenticated) {
+  if (isAuthenticated && store) {
     return <Navigate to="/producer" replace />;
   }
 
@@ -415,13 +698,23 @@ export function ProducerLoginPage() {
         <Hero>
           <ProducerBrandLogo size={132} variant="circle" frame="none" />
           {stepText ? <Step>{stepText}</Step> : null}
-          <Title>{mode === "login" ? "Bem-vindo de volta" : mode === "register" ? "Vamos criar sua loja" : "Seu catálogo no bolso do cliente"}</Title>
+          <Title>
+            {mode === "login"
+              ? "Bem-vindo de volta"
+              : mode === "register"
+                ? "Vamos criar sua loja"
+                : mode === "createStore"
+                  ? "Falta pouco: crie sua loja"
+                  : "Seu catálogo no bolso do cliente"}
+          </Title>
           <Subtitle>
             {mode === "login"
               ? "Entre para gerenciar sua loja no painel web com o mesmo fluxo do app mobile."
               : mode === "register"
                 ? "Uma pergunta de cada vez. Em menos de 2 minutos sua loja está pronta."
-                : "Cadastre produtos, gere QR Code e receba pedidos no WhatsApp sem complicação."}
+                : mode === "createStore"
+                  ? "Sua conta já existe - preencha os dados abaixo para começar a vender."
+                  : "Cadastre produtos, gere QR Code e receba pedidos no WhatsApp sem complicação."}
           </Subtitle>
         </Hero>
 
@@ -459,6 +752,82 @@ export function ProducerLoginPage() {
               Voltar
             </ActionButton>
           </Body>
+        ) : mode === "createStore" ? (
+          <Body>
+            <Form onSubmit={onCreateStore}>
+              <FieldGroup>
+                <FieldLabel htmlFor="create_store_name">Como sua loja se chama?</FieldLabel>
+                <FieldInput
+                  id="create_store_name"
+                  value={createStoreForm.name}
+                  onChange={(event) =>
+                    setCreateStoreForm((current) => ({ ...current, name: event.target.value }))
+                  }
+                  placeholder="Ex.: Pastelaria do Zé"
+                />
+              </FieldGroup>
+              <FieldGroup>
+                <FieldLabel htmlFor="create_store_whatsapp">Qual o WhatsApp da loja?</FieldLabel>
+                <FieldInput
+                  id="create_store_whatsapp"
+                  value={createStoreForm.whatsapp}
+                  onChange={(event) =>
+                    setCreateStoreForm((current) => ({ ...current, whatsapp: event.target.value }))
+                  }
+                  placeholder="(62) 9 9999-9999"
+                />
+              </FieldGroup>
+              <FieldGroup>
+                <FieldLabel>O que sua loja oferece?</FieldLabel>
+                <OptionGrid>
+                  {OFFERING_TYPE_OPTIONS.map((option) => (
+                    <OptionButton
+                      key={option.value}
+                      type="button"
+                      selected={createStoreForm.offeringType === option.value}
+                      onClick={() =>
+                        setCreateStoreForm((current) => ({
+                          ...current,
+                          offeringType: option.value,
+                          consumption: requiresConsumptionStep(option.value) ? current.consumption : null,
+                        }))
+                      }
+                    >
+                      <OptionButtonLabel>{option.label}</OptionButtonLabel>
+                      <OptionButtonHint>{option.hint}</OptionButtonHint>
+                    </OptionButton>
+                  ))}
+                </OptionGrid>
+              </FieldGroup>
+              {requiresConsumptionStep(createStoreForm.offeringType) ? (
+                <FieldGroup>
+                  <FieldLabel>Seus produtos são de consumo?</FieldLabel>
+                  <FieldHint>Comida e bebida contam como consumo.</FieldHint>
+                  <OptionGrid>
+                    {CONSUMPTION_OPTIONS.map((option) => (
+                      <OptionButton
+                        key={option.value}
+                        type="button"
+                        selected={createStoreForm.consumption === option.value}
+                        onClick={() =>
+                          setCreateStoreForm((current) => ({ ...current, consumption: option.value }))
+                        }
+                      >
+                        <OptionButtonLabel>{option.label}</OptionButtonLabel>
+                        <OptionButtonHint>{option.hint}</OptionButtonHint>
+                      </OptionButton>
+                    ))}
+                  </OptionGrid>
+                </FieldGroup>
+              ) : null}
+              <ActionButton type="submit" disabled={createStore.isPending}>
+                {createStore.isPending ? "Criando..." : "Criar minha loja"}
+              </ActionButton>
+            </Form>
+            <ActionButton variant="ghost" onClick={signOut}>
+              Sair da conta
+            </ActionButton>
+          </Body>
         ) : (
           <Body>
             <ModeSwitch>
@@ -470,7 +839,11 @@ export function ProducerLoginPage() {
               {registerField}
               <Actions>
                 <ActionButton type="submit" disabled={register.isPending}>
-                  {registerStep === 4 ? (register.isPending ? "Criando..." : "Criar minha loja") : "Continuar"}
+                  {registerStepKey === "password"
+                    ? register.isPending
+                      ? "Criando..."
+                      : "Criar minha loja"
+                    : "Continuar"}
                 </ActionButton>
                 <ActionButton
                   type="button"

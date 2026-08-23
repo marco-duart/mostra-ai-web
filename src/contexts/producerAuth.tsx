@@ -20,10 +20,13 @@ export function getProducerAccessToken(): string | null {
 
 type ProducerAuthContextValue = {
   accessToken: string | null;
+  /** null = conta autenticada mas ainda sem loja criada. */
   store: AuthenticatedStoreSummary | null;
   isBootstrapping: boolean;
   isAuthenticated: boolean;
   signIn: (payload: LoginResponse) => void;
+  /** Atualiza só a loja de uma conta já autenticada (2a etapa do cadastro). */
+  setStore: (store: AuthenticatedStoreSummary) => void;
   signOut: () => void;
 };
 
@@ -53,6 +56,10 @@ export function ProducerAuthProvider({ children }: PropsWithChildren) {
         localStorage.setItem(STORE_STORAGE_KEY, JSON.stringify(payload.store));
         setAccessToken(payload.accessToken);
         setStore(payload.store);
+      },
+      setStore: (nextStore) => {
+        localStorage.setItem(STORE_STORAGE_KEY, JSON.stringify(nextStore));
+        setStore(nextStore);
       },
       signOut: () => {
         localStorage.removeItem(TOKEN_STORAGE_KEY);

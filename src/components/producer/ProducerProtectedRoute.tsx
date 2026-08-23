@@ -24,5 +24,13 @@ export function ProducerProtectedRoute() {
     return <Navigate to="/producer/login" replace />;
   }
 
+  if (!auth.store) {
+    // Conta autenticada mas ainda sem loja (ex.: cadastro em duas etapas
+    // interrompido, ou conta criada só pelo app Cliente) - as páginas do
+    // painel assumem uma loja existente, então volta pro fluxo de criação
+    // em vez de deixá-las tentar carregar dados que não existem.
+    return <Navigate to="/producer/login" replace />;
+  }
+
   return <Outlet />;
 }
