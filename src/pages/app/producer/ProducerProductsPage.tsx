@@ -17,11 +17,13 @@ import {
   useDeleteProducerProductMutation,
   useProducerProductsQuery,
   useUpdateProducerProductMutation,
+  useUpdateProducerProductSchedulingMutation,
   useUploadProducerProductImageMutation,
 } from "@/hooks/useProducerProducts";
 import { useProducerCategoriesQuery } from "@/hooks/useProducerCategories";
+import { useProducerStoreQuery } from "@/hooks/useProducerStore";
 import { formatPrice } from "@/utils/format";
-import type { ProducerProduct } from "@/types/producer";
+import type { ProducerProduct, ProductItemType } from "@/types/producer";
 
 function parseApiMessage(err: unknown): string {
   if (!axios.isAxiosError(err)) return "Não foi possível concluir agora.";
@@ -42,6 +44,11 @@ type Draft = {
   categoryId: string;
   imageUrl: string | null;
   isAvailable: boolean;
+  // Agenda (só relevante quando a loja oferece Serviços) - salva por um
+  // endpoint separado, igual ao mobile (ver onSaveScheduling).
+  itemType: ProductItemType;
+  isSchedulable: boolean;
+  durationMinutes: string;
 };
 
 const emptyDraft: Draft = {
@@ -51,6 +58,9 @@ const emptyDraft: Draft = {
   categoryId: "",
   imageUrl: null,
   isAvailable: true,
+  itemType: "PRODUCT",
+  isSchedulable: true,
+  durationMinutes: "",
 };
 
 function draftFromProduct(product: ProducerProduct): Draft {
@@ -62,16 +72,24 @@ function draftFromProduct(product: ProducerProduct): Draft {
     categoryId: product.categoryId ?? "",
     imageUrl: product.imageUrl,
     isAvailable: product.isAvailable,
+    itemType: product.itemType,
+    isSchedulable: product.isSchedulable ?? true,
+    durationMinutes: product.durationMinutes ? String(product.durationMinutes) : "",
   };
 }
 
 export function ProducerProductsPage() {
   const productsQuery = useProducerProductsQuery();
   const categoriesQuery = useProducerCategoriesQuery();
+  const storeQuery = useProducerStoreQuery();
   const createProduct = useCreateProducerProductMutation();
   const updateProduct = useUpdateProducerProductMutation();
+  const updateScheduling = useUpdateProducerProductSchedulingMutation();
   const deleteProduct = useDeleteProducerProductMutation();
   const uploadImage = useUploadProducerProductImageMutation();
+
+  const offeringType = storeQuery.data?.offeringType;
+  const storeOffersServices = offeringType === "SERVICE" || offeringType === "BOTH";
 
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<Draft>(emptyDraft);
@@ -164,6 +182,52 @@ export function ProducerProductsPage() {
         dto: { isAvailable: !product.isAvailable },
       });
       toast.success(product.isAvailable ? "Produto pausado." : "Produto ativado.");
+    } catch (err) {
+      toast.error(parseApiMessage(err));
+    }
+  };
+
+  const editingProduct = draft.id
+    ? (productsQuery.data ?? []).find((product) => product.id === draft.id) ?? null
+    : null;
+
+  const schedulingHasChanges = editingProduct
+    ? draft.itemType !== editingProduct.itemType ||
+      (draft.itemType === "SERVICE" &&
+        (draft.isSchedulable !== (editingProduct.isSchedulable ?? true) ||
+          (draft.isSchedulable &&
+            Number(draft.durationMinutes || 0) !== (editingProduct.durationMinutes ?? 0))))
+    : false;
+
+  const onSaveScheduling = async () => {
+    if (!draft.id) return;
+
+    if (draft.itemType === "PRODUCT") {
+      try {
+        await updateScheduling.mutateAsync({ id: draft.id, dto: { itemType: "PRODUCT" } });
+        toast.success("Configuração de agenda salva.");
+      } catch (err) {
+        toast.error(parseApiMessage(err));
+      }
+      return;
+    }
+
+    const duration = Number(draft.durationMinutes);
+    if (draft.isSchedulable && (!duration || duration <= 0)) {
+      toast.error("Informe quantos minutos dura o atendimento desse serviço.");
+      return;
+    }
+
+    try {
+      await updateScheduling.mutateAsync({
+        id: draft.id,
+        dto: {
+          itemType: "SERVICE",
+          isSchedulable: draft.isSchedulable,
+          ...(duration > 0 ? { durationMinutes: duration } : {}),
+        },
+      });
+      toast.success("Configuração de agenda salva.");
     } catch (err) {
       toast.error(parseApiMessage(err));
     }
@@ -312,6 +376,89 @@ export function ProducerProductsPage() {
                   />
                   Produto disponível no catálogo
                 </label>
+
+                {draft.id && storeOffersServices ? (
+                  <div
+                    style={{
+                      marginTop: 14,
+                      border: "1px solid rgba(255,255,255,0.08)",
+                      borderRadius: 12,
+                      padding: 12,
+                      display: "grid",
+                      gap: 10,
+                    }}
+                  >
+                    <ProducerSectionTitle>Agenda</ProducerSectionTitle>
+                    <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <input
+                        type="checkbox"
+                        checked={draft.itemType === "SERVICE"}
+                        onChange={(event) =>
+                          setDraft((current) => ({
+                            ...current,
+                            itemType: event.target.checked ? "SERVICE" : "PRODUCT",
+                          }))
+                        }
+                      />
+                      Este produto é um serviço (aparece na Agenda)
+                    </label>
+
+                    {draft.itemType === "SERVICE" ? (
+                      <>
+                        <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <input
+                            type="checkbox"
+                            checked={draft.isSchedulable}
+                            onChange={(event) =>
+                              setDraft((current) => ({
+                                ...current,
+                                isSchedulable: event.target.checked,
+                              }))
+                            }
+                          />
+                          Agendável (horário fixo)
+                        </label>
+                        <ProducerMuted>
+                          Desligue se você atende por disponibilidade, sem reservar um horário
+                          exato (o cliente recebe um prazo estimado em vez de uma hora marcada).
+                        </ProducerMuted>
+
+                        {draft.isSchedulable ? (
+                          <FieldGroup>
+                            <FieldLabel htmlFor="product_duration">
+                              Duração do atendimento (minutos)
+                            </FieldLabel>
+                            <Input
+                              id="product_duration"
+                              value={draft.durationMinutes}
+                              onChange={(event) =>
+                                setDraft((current) => ({
+                                  ...current,
+                                  durationMinutes: event.target.value,
+                                }))
+                              }
+                              placeholder="Ex.: 30"
+                            />
+                          </FieldGroup>
+                        ) : null}
+                      </>
+                    ) : null}
+
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      onClick={onSaveScheduling}
+                      disabled={!schedulingHasChanges || updateScheduling.isPending}
+                    >
+                      {updateScheduling.isPending
+                        ? "Salvando..."
+                        : schedulingHasChanges
+                          ? "Salvar configuração de agenda"
+                          : "Nenhuma alteração na agenda"}
+                    </Button>
+                  </div>
+                ) : null}
 
                 <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
                   <Button type="submit" disabled={createProduct.isPending || updateProduct.isPending}>

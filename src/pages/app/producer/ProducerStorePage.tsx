@@ -2,6 +2,7 @@ import { useEffect, useState, type ChangeEvent, type CSSProperties, type FormEve
 import toast from "react-hot-toast";
 import axios from "axios";
 import { Copy, ExternalLink, Share2 } from "lucide-react";
+import { styled } from "@/theme/stitches.config";
 import { Button } from "@/components/ui/Button";
 import { FieldGroup, FieldLabel, Input, Textarea } from "@/components/ui/Input";
 import { ProducerShell } from "@/components/producer/ProducerShell";
@@ -24,6 +25,7 @@ import {
   useUploadProducerStoreLogoMutation,
 } from "@/hooks/useProducerStore";
 import { getStoreThemeVars } from "@/utils/format";
+import type { OfferingType } from "@/types/producer";
 
 function parseApiMessage(err: unknown): string {
   if (!axios.isAxiosError(err)) return "Não foi possível concluir agora.";
@@ -36,10 +38,70 @@ function parseApiMessage(err: unknown): string {
   return err.message || "Erro inesperado.";
 }
 
+const OptionGrid = styled("div", {
+  display: "grid",
+  gap: "$2",
+  gridTemplateColumns: "1fr",
+  "@sm": {
+    gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+  },
+});
+
+const OptionButton = styled("button", {
+  all: "unset",
+  cursor: "pointer",
+  boxSizing: "border-box",
+  padding: "$3 $4",
+  borderRadius: "$md",
+  border: "1px solid $border",
+  backgroundColor: "$surfaceAlt",
+  color: "$text",
+  display: "flex",
+  flexDirection: "column",
+  gap: 2,
+  transition: "background-color 140ms ease, border-color 140ms ease, color 140ms ease",
+  "&:focus-visible": {
+    outline: "none",
+    borderColor: "$primaryBorder",
+    boxShadow: "0 0 0 2px $colors$primaryBorder",
+  },
+  variants: {
+    selected: {
+      true: {
+        borderColor: "$primaryBorder",
+        backgroundColor: "$primarySoft",
+        color: "$primary",
+      },
+    },
+  },
+});
+
+const OptionButtonLabel = styled("strong", {
+  fontSize: "$sm",
+});
+
+const OptionButtonHint = styled("span", {
+  fontSize: "$xs",
+  color: "$textMuted",
+});
+
+const OFFERING_TYPE_OPTIONS: { value: OfferingType; label: string; hint: string }[] = [
+  { value: "PRODUCT", label: "Produto", hint: "Itens físicos ou comida" },
+  { value: "SERVICE", label: "Serviço", hint: "Sem produto associado" },
+  { value: "BOTH", label: "Ambos", hint: "Produtos e serviços" },
+];
+
+const CONSUMPTION_OPTIONS: { value: "YES" | "NO"; label: string; hint: string }[] = [
+  { value: "YES", label: "Sim, são de consumo", hint: "Comida, bebida ou similares" },
+  { value: "NO", label: "Não são de consumo", hint: "Mercadorias em geral" },
+];
+
 type Draft = {
   name: string;
   whatsapp: string;
   instagram: string;
+  offeringType: OfferingType;
+  consumption: "YES" | "NO" | null;
   themePrimaryColor: string;
   themeSecondaryColor: string;
 };
@@ -55,6 +117,8 @@ export function ProducerStorePage() {
     name: "",
     whatsapp: "",
     instagram: "",
+    offeringType: "PRODUCT",
+    consumption: null,
     themePrimaryColor: "#E4572E",
     themeSecondaryColor: "#1A1A1A",
   });
@@ -65,10 +129,19 @@ export function ProducerStorePage() {
       name: storeQuery.data.name,
       whatsapp: storeQuery.data.whatsapp,
       instagram: storeQuery.data.instagram ?? "",
+      offeringType: storeQuery.data.offeringType,
+      consumption:
+        storeQuery.data.isConsumption === null
+          ? null
+          : storeQuery.data.isConsumption
+            ? "YES"
+            : "NO",
       themePrimaryColor: storeQuery.data.themePrimaryColor,
       themeSecondaryColor: storeQuery.data.themeSecondaryColor,
     });
   }, [storeQuery.data]);
+
+  const needsConsumptionAnswer = draft.offeringType === "PRODUCT" || draft.offeringType === "BOTH";
 
   const onUploadLogo = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -103,11 +176,18 @@ export function ProducerStorePage() {
       return;
     }
 
+    if (needsConsumptionAnswer && !draft.consumption) {
+      toast.error("Informe se seus produtos são de consumo.");
+      return;
+    }
+
     try {
       await updateStore.mutateAsync({
         name: draft.name.trim(),
         whatsapp: draft.whatsapp.trim(),
         instagram: draft.instagram.trim() ? draft.instagram.trim() : null,
+        offeringType: draft.offeringType,
+        isConsumption: needsConsumptionAnswer ? draft.consumption === "YES" : undefined,
         themePrimaryColor: draft.themePrimaryColor.toUpperCase(),
         themeSecondaryColor: draft.themeSecondaryColor.toUpperCase(),
       });
@@ -196,6 +276,42 @@ export function ProducerStorePage() {
               </ProducerMuted>
             </div>
           </ProducerGrid>
+        </ProducerCard>
+
+        <ProducerCard>
+          <ProducerSectionTitle>O que sua loja oferece?</ProducerSectionTitle>
+          <OptionGrid>
+            {OFFERING_TYPE_OPTIONS.map((option) => (
+              <OptionButton
+                key={option.value}
+                type="button"
+                selected={draft.offeringType === option.value}
+                onClick={() => setDraft((current) => ({ ...current, offeringType: option.value }))}
+              >
+                <OptionButtonLabel>{option.label}</OptionButtonLabel>
+                <OptionButtonHint>{option.hint}</OptionButtonHint>
+              </OptionButton>
+            ))}
+          </OptionGrid>
+
+          {needsConsumptionAnswer ? (
+            <>
+              <ProducerMuted style={{ marginTop: 16 }}>Seus produtos são de consumo?</ProducerMuted>
+              <OptionGrid style={{ marginTop: 8 }}>
+                {CONSUMPTION_OPTIONS.map((option) => (
+                  <OptionButton
+                    key={option.value}
+                    type="button"
+                    selected={draft.consumption === option.value}
+                    onClick={() => setDraft((current) => ({ ...current, consumption: option.value }))}
+                  >
+                    <OptionButtonLabel>{option.label}</OptionButtonLabel>
+                    <OptionButtonHint>{option.hint}</OptionButtonHint>
+                  </OptionButton>
+                ))}
+              </OptionGrid>
+            </>
+          ) : null}
         </ProducerCard>
 
         <ProducerCard>

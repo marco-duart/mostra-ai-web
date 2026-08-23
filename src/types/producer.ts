@@ -2,6 +2,7 @@ export type UUID = string;
 export type ISODateString = string;
 
 export type DocumentType = "CPF" | "CNPJ";
+export type OfferingType = "PRODUCT" | "SERVICE" | "BOTH";
 export type DeliveryMode = "DELIVERY_ONLY" | "PICKUP_ONLY" | "BOTH" | "NEGOTIATE";
 export type PlanType = "FREE" | "PREMIUM";
 export type SubscriptionStatus = "ACTIVE" | "EXPIRED" | "CANCELED";
@@ -18,24 +19,43 @@ export interface LoginDto {
   password: string;
 }
 
-export interface RegisterDto {
+/**
+ * Cria apenas a conta (User), espelhando o RegisterDto do servidor
+ * (POST /auth/register). A loja é criada depois, num segundo passo, via
+ * CreateStoreDto (POST /producer/store) - mesma separação usada pelo app
+ * mobile do Produtor.
+ */
+export interface RegisterAccountDto {
   email: string;
   password: string;
   name: string;
   document: string;
   documentType: DocumentType;
-  whatsapp: string;
   acceptedAppTerms: boolean;
-  acceptedAccountTerms: boolean;
   acceptedLgpd: boolean;
+}
+
+/**
+ * Cria a loja para o usuário já autenticado (POST /producer/store).
+ * Corresponde ao CreateStoreDto do servidor.
+ */
+export interface CreateStoreDto {
+  name: string;
+  offeringType: OfferingType;
+  isConsumption?: boolean;
+  whatsapp: string;
+  acceptedAccountTerms: boolean;
 }
 
 export interface LoginResponse {
   accessToken: string;
-  store: AuthenticatedStoreSummary;
+  store: AuthenticatedStoreSummary | null;
 }
 
-export type RegisterResponse = LoginResponse;
+export type RegisterAccountResponse = {
+  accessToken: string;
+  user: { id: UUID; email: string; name: string };
+};
 
 export interface SubscriptionSummary {
   planType: PlanType;
@@ -49,6 +69,8 @@ export interface ProducerStore {
   name: string;
   document: string;
   documentType: DocumentType;
+  offeringType: OfferingType;
+  isConsumption: boolean | null;
   whatsapp: string;
   instagram: string | null;
   logoUrl: string | null;
@@ -65,6 +87,8 @@ export interface ProducerStore {
 
 export type UpdateStoreDto = Partial<{
   name: string;
+  offeringType: OfferingType;
+  isConsumption: boolean | null;
   whatsapp: string;
   instagram: string | null;
   logoUrl: string | null;
@@ -116,6 +140,11 @@ export interface CreateLocationDto {
 
 export type UpdateLocationDto = Partial<CreateLocationDto>;
 
+// PRODUCT = item de venda comum; SERVICE = item da Agenda (agendamento). Só
+// relevante quando a loja é offeringType SERVICE ou BOTH - mesma distinção
+// usada no mobile (ver mostra-ai-mobile/src/types/product.ts).
+export type ProductItemType = "PRODUCT" | "SERVICE";
+
 export interface ProducerProduct {
   id: UUID;
   storeId: UUID;
@@ -125,6 +154,10 @@ export interface ProducerProduct {
   price: number;
   imageUrl: string | null;
   isAvailable: boolean;
+  itemType: ProductItemType;
+  // Só fazem sentido quando itemType === "SERVICE".
+  isSchedulable: boolean | null;
+  durationMinutes: number | null;
 }
 
 export interface CreateProductDto {
@@ -138,3 +171,117 @@ export interface CreateProductDto {
 export type UpdateProductDto = Partial<CreateProductDto> & {
   isAvailable?: boolean;
 };
+
+/**
+ * Configuração de Agenda do produto - endpoint separado
+ * (PATCH /producer/products/:id/scheduling) porque não faz parte da edição
+ * comum de produto (nome/preço/foto), mesma separação usada pelo mobile.
+ */
+export interface UpdateProductSchedulingDto {
+  itemType?: ProductItemType;
+  isSchedulable?: boolean;
+  durationMinutes?: number;
+}
+
+// ---- Mesas (Tables) + Chamados (Chama Garçom) ----------------------------
+
+export type TableStatus = "OPEN" | "CLOSED";
+
+export interface TableMemberSummary {
+  storeMemberId: UUID;
+  name: string | null;
+  role: string | null;
+}
+
+export interface ProducerTable {
+  id: UUID;
+  name: string;
+  status: TableStatus;
+  currentToken: string | null;
+  locationId: UUID;
+  locationName: string;
+  members: TableMemberSummary[];
+}
+
+export interface CreateTableDto {
+  locationId: UUID;
+  name: string;
+}
+
+/**
+ * Item da fila de atendimento (ex.: chamada de garçom). No mobile isso só
+ * existe no app Partner (StoreMember); na web, o dono da loja enxerga a
+ * fila inteira direto pelo painel, sem precisar virar parceiro dela.
+ */
+export interface QueueItem {
+  id: UUID;
+  tableId: UUID;
+  tableName: string;
+  createdAt: ISODateString;
+}
+
+// ---- Equipe (Team / Partners) --------------------------------------------
+
+export interface StoreMember {
+  id: UUID;
+  role: string | null;
+  user: {
+    id: UUID;
+    name: string | null;
+    email: string;
+    document: string | null;
+  };
+}
+
+export interface LinkStoreMemberDto {
+  document: string;
+  role?: string;
+}
+
+// ---- Agenda (Appointments + Availability) --------------------------------
+
+export type AppointmentStatus = "PENDING" | "CONFIRMED" | "REJECTED" | "CANCELED" | "COMPLETED";
+
+export interface AppointmentItem {
+  id: UUID;
+  productId: UUID | null;
+  productNameSnapshot: string;
+  durationMinutesSnapshot: number | null;
+  isSchedulableSnapshot: boolean;
+  sortOrder: number;
+}
+
+export interface Appointment {
+  id: UUID;
+  storeId: UUID;
+  locationId: UUID;
+  locationName: string;
+  customerId: UUID;
+  customerName: string | null;
+  customerEmail: string | null;
+  status: AppointmentStatus;
+  isEstimateRequest: boolean;
+  startsAt: ISODateString | null;
+  endsAt: ISODateString | null;
+  estimatedCompletionAt: ISODateString | null;
+  customerNotes: string | null;
+  producerNotes: string | null;
+  createdAt: ISODateString;
+  items: AppointmentItem[];
+}
+
+export interface ListAppointmentsParams {
+  from?: string; // YYYY-MM-DD
+  to?: string; // YYYY-MM-DD
+  status?: AppointmentStatus;
+  locationId?: UUID;
+}
+
+// Turno em que uma Localização aceita agendamento - diferente do horário de
+// funcionamento (ProducerLocationSchedule).
+export interface LocationAvailabilitySlot {
+  id?: UUID;
+  dayOfWeek: DayOfWeek;
+  startTime: string; // HH:mm
+  endTime: string; // HH:mm
+}

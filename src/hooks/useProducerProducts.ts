@@ -1,7 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { producerService } from "@/services/producer.service";
 import { useProducerAuth } from "@/contexts/producerAuth";
-import type { CreateProductDto, UpdateProductDto, UUID } from "@/types/producer";
+import type {
+  CreateProductDto,
+  UpdateProductDto,
+  UpdateProductSchedulingDto,
+  UUID,
+} from "@/types/producer";
 
 export const producerProductsQueryKey = ["producer", "products"] as const;
 
@@ -31,6 +36,18 @@ export function useUpdateProducerProductMutation() {
   return useMutation({
     mutationFn: (input: { id: UUID; dto: UpdateProductDto }) =>
       producerService.updateProduct(input.id, input.dto),
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: producerProductsQueryKey });
+      qc.setQueryData(producerProductQueryKey(data.id), data);
+    },
+  });
+}
+
+export function useUpdateProducerProductSchedulingMutation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: { id: UUID; dto: UpdateProductSchedulingDto }) =>
+      producerService.updateProductScheduling(input.id, input.dto),
     onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: producerProductsQueryKey });
       qc.setQueryData(producerProductQueryKey(data.id), data);
