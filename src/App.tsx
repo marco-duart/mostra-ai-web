@@ -4,6 +4,9 @@ import { TablePage } from "./pages/app/customer/TablePage";
 import { ScheduleServicePage } from "./pages/app/customer/ScheduleServicePage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { PrivacyPage } from "./pages/PrivacyPage";
+import { TermsPage } from "./pages/TermsPage";
+import { AboutPage } from "./pages/AboutPage";
+import { ContactPage } from "./pages/ContactPage";
 import { CancellationPage } from "./pages/CancellationPage";
 import { ProducerLoginPage } from "./pages/app/producer/ProducerLoginPage";
 import { ProducerDashboardPage } from "./pages/app/producer/ProducerDashboardPage";
@@ -32,6 +35,9 @@ export function App() {
         <Route path="agenda" element={<ProducerAgendaPage />} />
       </Route>
       <Route path="/privacy" element={<PrivacyPage />} />
+      <Route path="/termos" element={<TermsPage />} />
+      <Route path="/sobre" element={<AboutPage />} />
+      <Route path="/contato" element={<ContactPage />} />
       <Route path="/cancel" element={<CancellationPage />} />
       <Route path="/:slug/mesa/:token" element={<TablePage />} />
       <Route path="/:slug/agendar" element={<ScheduleServicePage />} />

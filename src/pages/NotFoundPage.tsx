@@ -1,4 +1,4 @@
-import { Smartphone, Instagram, Globe, FileText, Apple, PlayCircle } from "lucide-react";
+import { Smartphone, Info, FileText, ShieldCheck, Mail, Apple, PlayCircle } from "lucide-react";
 import { styled } from "@/theme/stitches.config";
 import { PageContent } from "@/components/layout/PageContent";
 import { Card, Section, SectionTitle } from "@/components/ui/Card";
@@ -83,9 +83,8 @@ export function NotFoundPage() {
         <Card>
           <SectionTitle>É produtor(a)?</SectionTitle>
           <p style={{ marginTop: 0, color: "#a1a1aa" }}>
-            Cadastre seu negócio no app <strong>{SITE.mobileApp.name}</strong> e crie
-            seu catálogo de produtos digital em minutos — ideal para bares, feirantes e pequenos
-            negócios.
+            Cadastre seu negócio no app <strong>{SITE.mobileApp.name}</strong> e crie seu catálogo
+            de produtos digital em minutos — ideal para bares, feirantes e pequenos negócios.
           </p>
           <AppStores>
             <LinkRow href={SITE.mobileApp.androidUrl} target="_blank" rel="noreferrer">
@@ -107,23 +106,29 @@ export function NotFoundPage() {
       <Section>
         <SectionTitle>Sobre nós</SectionTitle>
         <LinkGrid>
-          <LinkRow href={SITE.personalInstagram} target="_blank" rel="noreferrer">
+          <LinkRow href="/sobre" as="a">
             <IconWrap>
-              <Instagram size={20} />
+              <Info size={20} />
             </IconWrap>
-            Instagram oficial
+            Sobre o {SITE.brand}
           </LinkRow>
-          <LinkRow href={SITE.personalSite} target="_blank" rel="noreferrer">
-            <IconWrap>
-              <Globe size={20} />
-            </IconWrap>
-            Site pessoal
-          </LinkRow>
-          <LinkRow href={SITE.cnpjLookupUrl} target="_blank" rel="noreferrer">
+          <LinkRow href="/termos" as="a">
             <IconWrap>
               <FileText size={20} />
             </IconWrap>
-            {SITE.cnpjLabel}
+            Termos de Uso
+          </LinkRow>
+          <LinkRow href="/privacy" as="a">
+            <IconWrap>
+              <ShieldCheck size={20} />
+            </IconWrap>
+            Política de Privacidade
+          </LinkRow>
+          <LinkRow href="/contato" as="a">
+            <IconWrap>
+              <Mail size={20} />
+            </IconWrap>
+            Fale conosco
           </LinkRow>
           <LinkRow href="/" as="a">
             <IconWrap>

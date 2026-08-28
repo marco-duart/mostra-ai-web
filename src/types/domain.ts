@@ -2,6 +2,16 @@ export type DeliveryMode = "DELIVERY_ONLY" | "PICKUP_ONLY" | "BOTH" | "NEGOTIATE
 export type OfferingType = "PRODUCT" | "SERVICE" | "BOTH";
 export type ProductItemType = "PRODUCT" | "SERVICE";
 
+export type LegalDocumentType = "APP_TERMS" | "ACCOUNT_TERMS" | "LGPD";
+
+export interface LegalDocument {
+  id: string;
+  type: LegalDocumentType;
+  version: string;
+  title: string;
+  content_md: string;
+}
+
 export interface StoreIdentity {
   // Exposto pelo backend a partir da correção feita junto com o fluxo de
   // agendamento - necessário pra criar o agendamento (POST /client/appointments
