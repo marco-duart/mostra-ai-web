@@ -106,13 +106,13 @@ export function NotFoundPage() {
       <Section>
         <SectionTitle>Sobre nós</SectionTitle>
         <LinkGrid>
-          <LinkRow href="/sobre" as="a">
+          <LinkRow href="/about" as="a">
             <IconWrap>
               <Info size={20} />
             </IconWrap>
             Sobre o {SITE.brand}
           </LinkRow>
-          <LinkRow href="/termos" as="a">
+          <LinkRow href="/terms" as="a">
             <IconWrap>
               <FileText size={20} />
             </IconWrap>
@@ -124,7 +124,7 @@ export function NotFoundPage() {
             </IconWrap>
             Política de Privacidade
           </LinkRow>
-          <LinkRow href="/contato" as="a">
+          <LinkRow href="/contact" as="a">
             <IconWrap>
               <Mail size={20} />
             </IconWrap>

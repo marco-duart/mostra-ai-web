@@ -119,7 +119,7 @@ export function TermsPage() {
           <LegalNote>
             Para saber como tratamos seus dados pessoais, veja nossa{" "}
             <a href="/privacy">Política de Privacidade</a>. Página pública para referência em lojas
-            de aplicativos e parceiros. Link direto: /termos{" "}
+            de aplicativos e parceiros. Link direto: /terms{" "}
             <ExternalLink size={14} style={{ verticalAlign: "text-bottom" }} />
           </LegalNote>
         </Card>
