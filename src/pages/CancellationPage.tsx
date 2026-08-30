@@ -75,9 +75,9 @@ export function CancellationPage() {
             </p>
 
             <EmailBlock>
-              <a href="mailto:marcoaurelioduartebezerra@gmail.com">
+              <a href="mailto:maaxis.tech@gmail.com">
                 <Mail size={16} />
-                marcoaurelioduartebezerra@gmail.com
+                maaxis.tech@gmail.com
               </a>
             </EmailBlock>
           </Body>

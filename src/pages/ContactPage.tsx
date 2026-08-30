@@ -74,11 +74,11 @@ export function ContactPage() {
       <Section>
         <Card>
           <ChannelGrid>
-            <ChannelRow href="mailto:marcoaurelioduartebezerra@gmail.com">
+            <ChannelRow href="mailto:maaxis.tech@gmail.com">
               <IconWrap>
                 <Mail size={20} />
               </IconWrap>
-              marcoaurelioduartebezerra@gmail.com
+              maaxis.tech@gmail.com
             </ChannelRow>
             <ChannelRow href={SITE.personalInstagram} target="_blank" rel="noreferrer">
               <IconWrap>

@@ -164,7 +164,7 @@ export function PrivacyPage() {
                 Instagram: <a href={SITE.personalInstagram}>{SITE.personalInstagram}</a>
               </li>
               <li>
-                E-mail: <a href="mailto:marcoaurelioduartebezerra@gmail.com">marcoaurelioduartebezerra@gmail.com</a>
+                E-mail: <a href="mailto:maaxis.tech@gmail.com">maaxis.tech@gmail.com</a>
               </li>
             </ul>
 
