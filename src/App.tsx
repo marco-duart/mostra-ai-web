@@ -8,6 +8,7 @@ import { TermsPage } from "./pages/TermsPage";
 import { AboutPage } from "./pages/AboutPage";
 import { ContactPage } from "./pages/ContactPage";
 import { CancellationPage } from "./pages/CancellationPage";
+import { AccountDeletionPage } from "./pages/AccountDeletionPage";
 import { ProducerLoginPage } from "./pages/app/producer/ProducerLoginPage";
 import { ProducerDashboardPage } from "./pages/app/producer/ProducerDashboardPage";
 import { ProducerStorePage } from "./pages/app/producer/ProducerStorePage";
@@ -39,6 +40,7 @@ export function App() {
       <Route path="/about" element={<AboutPage />} />
       <Route path="/contact" element={<ContactPage />} />
       <Route path="/cancel" element={<CancellationPage />} />
+      <Route path="/account-deletion" element={<AccountDeletionPage />} />
       <Route path="/:slug/mesa/:token" element={<TablePage />} />
       <Route path="/:slug/agendar" element={<ScheduleServicePage />} />
       <Route path="/:slug" element={<StorePage />} />

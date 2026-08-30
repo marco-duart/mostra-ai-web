@@ -1,4 +1,13 @@
-import { Smartphone, Info, FileText, ShieldCheck, Mail, Apple, PlayCircle } from "lucide-react";
+import {
+  Smartphone,
+  Info,
+  FileText,
+  ShieldCheck,
+  Mail,
+  Apple,
+  PlayCircle,
+  UserX,
+} from "lucide-react";
 import { styled } from "@/theme/stitches.config";
 import { PageContent } from "@/components/layout/PageContent";
 import { Card, Section, SectionTitle } from "@/components/ui/Card";
@@ -129,6 +138,12 @@ export function NotFoundPage() {
               <Mail size={20} />
             </IconWrap>
             Fale conosco
+          </LinkRow>
+          <LinkRow href="/account-deletion" as="a">
+            <IconWrap>
+              <UserX size={20} />
+            </IconWrap>
+            Exclusão de Conta e Dados
           </LinkRow>
           <LinkRow href="/" as="a">
             <IconWrap>
