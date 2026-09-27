@@ -26,6 +26,7 @@ export interface StoreIdentity {
   theme_secondary_color: string;
   offering_type: OfferingType;
   is_consumption: boolean | null;
+  is_mixed_consumption: boolean;
 }
 
 export interface StoreLocation {

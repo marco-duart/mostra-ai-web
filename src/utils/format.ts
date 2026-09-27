@@ -42,7 +42,9 @@ function hexToRgb(hex: string): RGB {
 
 function rgbToHex({ r, g, b }: RGB): string {
   const to = (v: number) =>
-    Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, "0");
+    Math.max(0, Math.min(255, Math.round(v)))
+      .toString(16)
+      .padStart(2, "0");
   return `#${to(r)}${to(g)}${to(b)}`.toUpperCase();
 }
 
@@ -121,13 +123,16 @@ export function deliveryModeLabel(mode: string): string {
 /**
  * Resolve o rotulo de exibicao do catalogo da loja a partir do que ela oferece.
  * - SERVICE -> "Serviços"
- * - PRODUCT ou BOTH com consumo -> "Cardápio"
+ * - PRODUCT ou BOTH, só consumo -> "Cardápio"
+ * - PRODUCT ou BOTH, consumo e mercadoria geral ("Ambos") -> "Cardápio e Catálogo"
  * - PRODUCT ou BOTH sem consumo -> "Catálogo"
  */
 export function resolveCatalogLabel(
   offeringType: OfferingType,
   isConsumption: boolean | null,
+  isMixedConsumption?: boolean,
 ): string {
   if (offeringType === "SERVICE") return "Serviços";
+  if (isMixedConsumption) return "Cardápio e Catálogo";
   return isConsumption ? "Cardápio" : "Catálogo";
 }

@@ -96,7 +96,11 @@ export function StoreCatalogView({ slug, footer }: Props) {
   }
 
   const { store, current_location, locations, menu, message } = state.data;
-  const catalogLabel = resolveCatalogLabel(store.offering_type, store.is_consumption);
+  const catalogLabel = resolveCatalogLabel(
+    store.offering_type,
+    store.is_consumption,
+    store.is_mixed_consumption,
+  );
   const hasServices = menu.some((category) =>
     category.products.some((product) => product.item_type === "SERVICE"),
   );
