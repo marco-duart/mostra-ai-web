@@ -177,6 +177,7 @@ type ApiTable = {
   name: string;
   status: ProducerTable["status"];
   current_token: string | null;
+  opened_at: string | null;
   location: { id: string; name: string };
   members: {
     store_member: {
@@ -193,6 +194,7 @@ function mapTable(data: ApiTable): ProducerTable {
     name: data.name,
     status: data.status,
     currentToken: data.current_token,
+    openedAt: data.opened_at,
     locationId: data.location.id,
     locationName: data.location.name,
     members: data.members.map((m) => ({
@@ -221,6 +223,7 @@ function mapQueueItem(data: ApiQueueItem): QueueItem {
 type ApiStoreMember = {
   id: string;
   role: string | null;
+  service_fee_percent: string | number | null;
   user: {
     id: string;
     name: string | null;
@@ -233,6 +236,10 @@ function mapStoreMember(data: ApiStoreMember): StoreMember {
   return {
     id: data.id,
     role: data.role,
+    serviceFeePercent:
+      data.service_fee_percent === null || data.service_fee_percent === undefined
+        ? null
+        : Number(data.service_fee_percent),
     user: data.user,
   };
 }
@@ -637,7 +644,19 @@ export const producerService = {
   async linkStoreMember(dto: LinkStoreMemberDto): Promise<StoreMember> {
     const { data } = await api.post<ApiStoreMember>(
       "/api/v1/producer/store-members",
-      { document: dto.document, ...(dto.role ? { role: dto.role } : {}) },
+      {
+        document: dto.document,
+        ...(dto.role ? { role: dto.role } : {}),
+        service_fee_percent: dto.serviceFeePercent,
+      },
+      { headers: authHeaders() },
+    );
+    return mapStoreMember(data);
+  },
+  async updateStoreMemberServiceFee(id: UUID, serviceFeePercent: number): Promise<StoreMember> {
+    const { data } = await api.patch<ApiStoreMember>(
+      `/api/v1/producer/store-members/${id}`,
+      { service_fee_percent: serviceFeePercent },
       { headers: authHeaders() },
     );
     return mapStoreMember(data);

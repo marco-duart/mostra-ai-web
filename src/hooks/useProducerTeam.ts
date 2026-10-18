@@ -29,3 +29,12 @@ export function useRemoveProducerStoreMemberMutation() {
     onSuccess: () => qc.invalidateQueries({ queryKey: producerTeamQueryKey }),
   });
 }
+
+export function useUpdateProducerServiceFeeMutation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, serviceFeePercent }: { id: UUID; serviceFeePercent: number }) =>
+      producerService.updateStoreMemberServiceFee(id, serviceFeePercent),
+    onSuccess: () => qc.invalidateQueries({ queryKey: producerTeamQueryKey }),
+  });
+}

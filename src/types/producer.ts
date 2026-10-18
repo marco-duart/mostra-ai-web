@@ -198,6 +198,7 @@ export interface ProducerTable {
   name: string;
   status: TableStatus;
   currentToken: string | null;
+  openedAt: string | null;
   locationId: UUID;
   locationName: string;
   members: TableMemberSummary[];
@@ -225,6 +226,7 @@ export interface QueueItem {
 export interface StoreMember {
   id: UUID;
   role: string | null;
+  serviceFeePercent: number | null;
   user: {
     id: UUID;
     name: string | null;
@@ -236,6 +238,7 @@ export interface StoreMember {
 export interface LinkStoreMemberDto {
   document: string;
   role?: string;
+  serviceFeePercent: number;
 }
 
 // ---- Agenda (Appointments + Availability) --------------------------------
@@ -284,4 +287,86 @@ export interface LocationAvailabilitySlot {
   dayOfWeek: DayOfWeek;
   startTime: string; // HH:mm
   endTime: string; // HH:mm
+}
+
+// ---- Comanda Digital -------------------------------------------------------
+
+export type ComandaStatus = "OPEN" | "CLOSED";
+
+export interface ComandaSummary {
+  id: UUID;
+  status: ComandaStatus;
+  tableId: UUID | null;
+  tableName: string;
+  responsibleName: string;
+  openedAt: string;
+  closedAt: string | null;
+  itemCount: number;
+  subtotal: number;
+  serviceFee: number;
+  total: number;
+}
+
+export interface ComandaDiscount {
+  type: "PERCENT" | "AMOUNT";
+  value: number;
+  reason: string | null;
+}
+
+export interface ComandaItem {
+  id: UUID;
+  name: string;
+  unitPrice: number;
+  quantity: number;
+  notes: string | null;
+  status: "ACTIVE" | "CANCELED";
+  discount: ComandaDiscount | null;
+  lineGross: number;
+  lineDiscount: number;
+  lineNet: number;
+  addedByName: string | null;
+  canceledByName: string | null;
+  cancelReason: string | null;
+}
+
+export interface ComandaDetail extends ComandaSummary {
+  serviceFeePercent: number;
+  serviceFeeApplied: boolean;
+  closedByName: string | null;
+  closedByOwner: boolean;
+  discount: (ComandaDiscount & { byName: string | null }) | null;
+  items: ComandaItem[];
+  totals: {
+    gross: number;
+    itemDiscounts: number;
+    comandaDiscount: number;
+    discountTotal: number;
+    subtotal: number;
+    serviceFee: number;
+    total: number;
+  };
+}
+
+export interface ComandaReportBucket {
+  comandas: number;
+  gross: number;
+  sales: number;
+  discounts: number;
+  serviceFee: number;
+  total: number;
+  averageTicket: number;
+  feeWaived: number;
+}
+
+export interface ComandaReport {
+  from: string;
+  to: string;
+  general: ComandaReportBucket;
+  byWaiter: (ComandaReportBucket & { memberId: UUID | null; name: string })[];
+}
+
+export interface ComandaFilter {
+  status?: ComandaStatus;
+  from?: string;
+  to?: string;
 }

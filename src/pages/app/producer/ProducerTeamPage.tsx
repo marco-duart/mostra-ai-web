@@ -16,7 +16,10 @@ import {
   useLinkProducerStoreMemberMutation,
   useProducerTeamQuery,
   useRemoveProducerStoreMemberMutation,
+  useUpdateProducerServiceFeeMutation,
 } from "@/hooks/useProducerTeam";
+import type { StoreMember } from "@/types/producer";
+import { formatServiceFee, parseServiceFee } from "@/utils/serviceFee";
 
 function parseApiMessage(err: unknown): string {
   if (!axios.isAxiosError(err)) return "Não foi possível concluir agora.";
@@ -29,6 +32,69 @@ function parseApiMessage(err: unknown): string {
   return err.message || "Erro inesperado.";
 }
 
+function ServiceFeeEditor({ member }: { member: StoreMember }) {
+  const update = useUpdateProducerServiceFeeMutation();
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState("");
+  const isSet = member.serviceFeePercent !== null;
+
+  const save = async () => {
+    const fee = parseServiceFee(value);
+    if (fee.error !== null) {
+      toast.error(fee.error);
+      return;
+    }
+    try {
+      await update.mutateAsync({ id: member.id, serviceFeePercent: fee.value });
+      toast.success("Taxa de serviço atualizada.");
+      setEditing(false);
+    } catch (err) {
+      toast.error(parseApiMessage(err));
+    }
+  };
+
+  if (!editing) {
+    return (
+      <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+        <ProducerMuted style={isSet ? undefined : { color: "#EF3E41", fontWeight: 600 }}>
+          {isSet
+            ? `Taxa de serviço: ${formatServiceFee(member.serviceFeePercent ?? 0)}`
+            : "Taxa de serviço não definida: esse garçom ainda não consegue abrir comanda."}
+        </ProducerMuted>
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() => {
+            setValue(isSet ? String(member.serviceFeePercent).replace(".", ",") : "");
+            setEditing(true);
+          }}
+        >
+          {isSet ? "Alterar taxa" : "Definir taxa"}
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+      <Input
+        aria-label="Taxa de serviço (%)"
+        value={value}
+        onChange={(event) => setValue(event.target.value)}
+        placeholder="Ex.: 10"
+        style={{ maxWidth: 120 }}
+        autoFocus
+      />
+      <Button size="sm" onClick={save} disabled={update.isPending}>
+        {update.isPending ? "Salvando..." : "Salvar"}
+      </Button>
+      <Button size="sm" variant="ghost" onClick={() => setEditing(false)}>
+        Cancelar
+      </Button>
+    </div>
+  );
+}
+
 export function ProducerTeamPage() {
   const teamQuery = useProducerTeamQuery();
   const linkMember = useLinkProducerStoreMemberMutation();
@@ -36,6 +102,7 @@ export function ProducerTeamPage() {
 
   const [document, setDocument] = useState("");
   const [role, setRole] = useState("");
+  const [serviceFee, setServiceFee] = useState("");
 
   const onSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -45,14 +112,22 @@ export function ProducerTeamPage() {
       return;
     }
 
+    const fee = parseServiceFee(serviceFee);
+    if (fee.error !== null) {
+      toast.error(fee.error);
+      return;
+    }
+
     try {
       await linkMember.mutateAsync({
         document: cleanDocument,
         ...(role.trim() ? { role: role.trim() } : {}),
+        serviceFeePercent: fee.value,
       });
       toast.success("Parceiro adicionado à equipe.");
       setDocument("");
       setRole("");
+      setServiceFee("");
     } catch (err) {
       toast.error(parseApiMessage(err));
     }
@@ -105,6 +180,7 @@ export function ProducerTeamPage() {
                     <strong>{member.user.name ?? member.user.email}</strong>
                     <ProducerMuted>{member.user.email}</ProducerMuted>
                     {member.role ? <ProducerMuted>Função: {member.role}</ProducerMuted> : null}
+                    <ServiceFeeEditor member={member} />
                     <div>
                       <Button
                         size="sm"
@@ -144,6 +220,19 @@ export function ProducerTeamPage() {
                   onChange={(event) => setRole(event.target.value)}
                   placeholder="Ex.: Garçom, Cozinha"
                 />
+              </FieldGroup>
+              <FieldGroup>
+                <FieldLabel htmlFor="team_fee">Taxa de serviço (%)</FieldLabel>
+                <Input
+                  id="team_fee"
+                  value={serviceFee}
+                  onChange={(event) => setServiceFee(event.target.value)}
+                  placeholder="Ex.: 10 (use 0 se não houver taxa)"
+                />
+                <ProducerMuted>
+                  Percentual que esse garçom recebe sobre as contas que abrir. Obrigatório, sem
+                  valor padrão.
+                </ProducerMuted>
               </FieldGroup>
               <Button type="submit" disabled={linkMember.isPending}>
                 {linkMember.isPending ? "Adicionando..." : "Adicionar à equipe"}
