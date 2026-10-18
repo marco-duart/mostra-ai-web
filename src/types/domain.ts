@@ -84,10 +84,46 @@ export interface ApiErrorShape {
       };
 }
 
+export interface TableAttendanceStatus {
+  status: "PENDING" | "ATTENDED";
+  created_at: string;
+  attended_at: string | null;
+}
+
+export interface PublicComandaItem {
+  name: string;
+  quantity: number;
+  notes: string | null;
+  unit_price: string;
+  line_gross: string;
+  line_discount: string;
+  line_net: string;
+}
+
+export interface PublicComanda {
+  service_fee_percent: string;
+  items: PublicComandaItem[];
+  totals: {
+    gross: string;
+    discount_total: string;
+    subtotal: string;
+    service_fee: string;
+    total: string;
+  };
+}
+
+export type AttendanceKind = "CALL_WAITER" | "REQUEST_BILL";
+
 export interface TableInfo {
   store_slug: string;
   store_name: string;
   table_name: string;
+  features: { tables: boolean };
+  attendances: {
+    call_waiter: TableAttendanceStatus | null;
+    request_bill: TableAttendanceStatus | null;
+  };
+  comanda: PublicComanda | null;
 }
 
 export interface AttendanceResult {

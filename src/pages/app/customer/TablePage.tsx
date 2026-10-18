@@ -34,7 +34,7 @@ const Title = styled("h1", {
  */
 export function TablePage() {
   const { token } = useParams<{ slug: string; token: string }>();
-  const state = useTableInfo(token);
+  const { state, refresh } = useTableInfo(token);
 
   useEffect(() => {
     if (state.status === "success") {
@@ -80,7 +80,16 @@ export function TablePage() {
   return (
     <StoreCatalogView
       slug={state.data.store_slug}
-      footer={<CallWaiterButton token={token!} tableName={state.data.table_name} />}
+      footer={
+        <CallWaiterButton
+          token={token!}
+          tableName={state.data.table_name}
+          comanda={state.data.comanda}
+          callAttendance={state.data.attendances.call_waiter}
+          billAttendance={state.data.attendances.request_bill}
+          onCalled={refresh}
+        />
+      }
     />
   );
 }

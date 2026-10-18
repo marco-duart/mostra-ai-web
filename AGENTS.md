@@ -46,7 +46,7 @@ src/
                                    catálogo é exibido, mude aqui, não duplique em StorePage. Tem o
                                    botão "Agendar serviço" (só aparece se algum produto do menu
                                    for item_type=SERVICE) que leva pra ScheduleServicePage.
-    store/CallWaiterButton.tsx    botão fixo "Chamar garçom" (só usado por TablePage)
+    store/CallWaiterButton.tsx    barra fixa da mesa: "Chamar garçom", "Pedir a conta" e a comanda (TableComanda); só usada por TablePage
     store/StoreHeader.tsx, MenuList.tsx, LocationsList.tsx, ContactForm.tsx
     producer/*                    shell/rotas protegidas do dashboard
     ui/Button.tsx, Card.tsx, Input.tsx, LogoSpinner.tsx
@@ -124,9 +124,11 @@ padrão de `useStoreCatalog`). Se 404 (token inválido OU mesa já fechada - o s
 token ao fechar, então dá pra tratar os dois casos igual), mostra "Mesa indisponível" em vez do
 catálogo. Se válido, renderiza `StoreCatalogView` (com o `store_slug` retornado pelo backend, não
 o `:slug` da URL - eles deveriam bater, mas quem manda é o token) passando um `footer` com
-`CallWaiterButton`, que faz `POST /api/v1/public/tables/:token/attendance` e mostra um estado de
-sucesso/desabilitado por 60s pra evitar clique repetido (o backend já é idempotente - reaproveita
-o atendimento pendente - mas UX melhor não incentivar clique múltiplo).
+`CallWaiterButton`, que faz `POST /api/v1/public/tables/:token/attendance` (`type`:
+`CALL_WAITER` ou `REQUEST_BILL`). O estado dos botões vem do servidor: `useTableInfo` atualiza a
+mesa a cada 10s e o `attendances` diz se há chamado pendente de cada tipo (pendente = botão
+desabilitado; atendido = volta a funcionar). Com comanda aberta, `TableComanda` mostra os itens e
+os totais (`comanda` no mesmo GET) e aparece o botão "Pedir a conta".
 
 ## Como rodar
 
