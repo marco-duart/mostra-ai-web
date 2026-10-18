@@ -4,6 +4,7 @@ import axios from "axios";
 import { QRCodeSVG } from "qrcode.react";
 import { Button } from "@/components/ui/Button";
 import { FieldGroup, FieldLabel, Input } from "@/components/ui/Input";
+import { ProducerComandasPanel } from "@/components/producer/ProducerComandasPanel";
 import { ProducerShell } from "@/components/producer/ProducerShell";
 import {
   ProducerCard,
@@ -28,6 +29,12 @@ import {
   useUnassignProducerTableMemberMutation,
 } from "@/hooks/useProducerTables";
 import type { ProducerTable } from "@/types/producer";
+
+const FORGOTTEN_OPEN_HOURS = 12;
+
+function openHours(openedAt: string | null): number {
+  return openedAt ? Math.floor((Date.now() - new Date(openedAt).getTime()) / 3_600_000) : 0;
+}
 
 function parseApiMessage(err: unknown): string {
   if (!axios.isAxiosError(err)) return "Não foi possível concluir agora.";
@@ -232,6 +239,7 @@ export function ProducerTablesPage() {
   const createTable = useCreateProducerTableMutation();
   const deleteTable = useDeleteProducerTableMutation();
 
+  const [view, setView] = useState<"tables" | "comandas">("tables");
   const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [locationId, setLocationId] = useState("");
@@ -286,9 +294,26 @@ export function ProducerTablesPage() {
           />
         </ProducerCard>
 
-        <QueueSection />
+        <div style={{ display: "flex", gap: 8 }}>
+          <Button
+            variant={view === "tables" ? "primary" : "secondary"}
+            onClick={() => setView("tables")}
+          >
+            Mesas
+          </Button>
+          <Button
+            variant={view === "comandas" ? "primary" : "secondary"}
+            onClick={() => setView("comandas")}
+          >
+            Comandas
+          </Button>
+        </div>
 
-        <ProducerGrid>
+        {view === "comandas" ? <ProducerComandasPanel /> : null}
+
+        {view === "tables" ? <QueueSection /> : null}
+
+        <ProducerGrid style={view === "tables" ? undefined : { display: "none" }}>
           <ProducerCard>
             <ProducerSectionTitle>Suas mesas</ProducerSectionTitle>
             {tablesQuery.isPending ? (
@@ -312,11 +337,23 @@ export function ProducerTablesPage() {
                       </span>
                     </div>
                     <ProducerMuted>{table.locationName}</ProducerMuted>
-                    <ProducerMuted>
-                      {table.members.length > 0
-                        ? table.members.map((m) => m.name ?? "Parceiro").join(", ")
-                        : "Nenhum parceiro atribuído"}
-                    </ProducerMuted>
+                    {table.members.length > 0 ? (
+                      <ProducerMuted>
+                        {table.members.map((m) => m.name ?? "Parceiro").join(", ")}
+                      </ProducerMuted>
+                    ) : table.status === "OPEN" ? (
+                      <ProducerMuted style={{ color: "#EF3E41", fontWeight: 600 }}>
+                        Sem garçom atribuído: os chamados dessa mesa chegam para você.
+                      </ProducerMuted>
+                    ) : (
+                      <ProducerMuted>Nenhum parceiro atribuído</ProducerMuted>
+                    )}
+                    {table.status === "OPEN" &&
+                    openHours(table.openedAt) >= FORGOTTEN_OPEN_HOURS ? (
+                      <ProducerMuted style={{ color: "#EF3E41", fontWeight: 600 }}>
+                        {`Aberta há ${openHours(table.openedAt)}h. Alguém esqueceu de fechar?`}
+                      </ProducerMuted>
+                    ) : null}
                     <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                       <Button size="sm" variant="ghost" onClick={() => setSelectedTableId(table.id)}>
                         Gerenciar
