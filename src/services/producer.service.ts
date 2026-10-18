@@ -381,6 +381,19 @@ export const producerService = {
     });
     return mapStore(data);
   },
+  async getAccountDeletionStatus(): Promise<{ pending: boolean; scheduledFor: string | null }> {
+    const { data } = await api.get<{ pending: boolean; scheduled_for?: string }>(
+      "/api/v1/account/deletion-request",
+      { headers: authHeaders() },
+    );
+    return { pending: data.pending, scheduledFor: data.scheduled_for ?? null };
+  },
+  async requestAccountDeletion(password: string): Promise<void> {
+    await api.post("/api/v1/account/deletion-request", { password }, { headers: authHeaders() });
+  },
+  async cancelAccountDeletion(): Promise<void> {
+    await api.post("/api/v1/account/deletion-request/cancel", {}, { headers: authHeaders() });
+  },
   async disableStore(reason?: string): Promise<void> {
     await api.patch(
       "/api/v1/producer/store/disable",

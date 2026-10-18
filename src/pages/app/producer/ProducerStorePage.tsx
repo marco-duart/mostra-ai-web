@@ -18,8 +18,11 @@ import {
   ProducerStack,
 } from "@/components/producer/ProducerUI";
 import {
+  useAccountDeletionStatusQuery,
+  useCancelAccountDeletionMutation,
   useDisableProducerStoreMutation,
   useProducerStoreQuery,
+  useRequestAccountDeletionMutation,
   useUpdateProducerStoreMutation,
   useUploadProducerStoreBackgroundMutation,
   useUploadProducerStoreLogoMutation,
@@ -112,6 +115,10 @@ export function ProducerStorePage() {
   const uploadLogo = useUploadProducerStoreLogoMutation();
   const uploadBackground = useUploadProducerStoreBackgroundMutation();
   const disableStore = useDisableProducerStoreMutation();
+  const deletionStatus = useAccountDeletionStatusQuery();
+  const requestDeletion = useRequestAccountDeletionMutation();
+  const cancelDeletion = useCancelAccountDeletionMutation();
+  const [deletionPassword, setDeletionPassword] = useState("");
 
   const [draft, setDraft] = useState<Draft>({
     name: "",
@@ -204,6 +211,36 @@ export function ProducerStorePage() {
       await disableStore.mutateAsync(reason);
       await storeQuery.refetch();
       toast.success("Conta desativada.");
+    } catch (err) {
+      toast.error(parseApiMessage(err));
+    }
+  };
+
+  const onRequestDeletion = async () => {
+    if (!deletionPassword) {
+      toast.error("Digite sua senha para confirmar.");
+      return;
+    }
+    if (
+      !window.confirm(
+        "Excluir sua conta e todos os dados da loja? A exclusão acontece em 7 dias e você pode cancelar até lá.",
+      )
+    ) {
+      return;
+    }
+    try {
+      await requestDeletion.mutateAsync(deletionPassword);
+      setDeletionPassword("");
+      toast.success("Pedido registrado. Enviamos um e-mail com o link para cancelar.");
+    } catch (err) {
+      toast.error(parseApiMessage(err));
+    }
+  };
+
+  const onCancelDeletion = async () => {
+    try {
+      await cancelDeletion.mutateAsync();
+      toast.success("Exclusão cancelada. Sua conta continua ativa.");
     } catch (err) {
       toast.error(parseApiMessage(err));
     }
@@ -485,6 +522,53 @@ export function ProducerStorePage() {
           <Button variant="secondary" onClick={onDisable} disabled={disableStore.isPending}>
             {disableStore.isPending ? "Desativando..." : "Desativar loja"}
           </Button>
+        </ProducerCard>
+
+        <ProducerCard>
+          <ProducerSectionTitle>Excluir minha conta</ProducerSectionTitle>
+          {deletionStatus.data?.pending ? (
+            <>
+              <ProducerMuted>
+                Sua conta será excluída em{" "}
+                {deletionStatus.data.scheduledFor
+                  ? new Date(deletionStatus.data.scheduledFor).toLocaleDateString("pt-BR")
+                  : "breve"}
+                . Até lá você pode mudar de ideia.
+              </ProducerMuted>
+              <Button
+                variant="secondary"
+                onClick={onCancelDeletion}
+                disabled={cancelDeletion.isPending}
+              >
+                {cancelDeletion.isPending ? "Cancelando..." : "Cancelar exclusão"}
+              </Button>
+            </>
+          ) : (
+            <>
+              <ProducerMuted>
+                Apaga sua conta, a loja, o catálogo e os dados associados depois de 7 dias (você
+                pode cancelar nesse período). Excluir a conta não cancela a assinatura Premium na
+                Play Store.
+              </ProducerMuted>
+              <FieldGroup>
+                <FieldLabel htmlFor="deletion_password">Sua senha</FieldLabel>
+                <Input
+                  id="deletion_password"
+                  type="password"
+                  autoComplete="current-password"
+                  value={deletionPassword}
+                  onChange={(event) => setDeletionPassword(event.target.value)}
+                />
+              </FieldGroup>
+              <Button
+                variant="secondary"
+                onClick={onRequestDeletion}
+                disabled={requestDeletion.isPending}
+              >
+                {requestDeletion.isPending ? "Enviando..." : "Excluir minha conta"}
+              </Button>
+            </>
+          )}
         </ProducerCard>
       </ProducerStack>
     </ProducerShell>

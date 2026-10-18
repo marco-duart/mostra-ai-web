@@ -91,8 +91,15 @@ export function AccountDeletionPage() {
           <Body>
             <h2>Como solicitar</h2>
             <p>
-              Envie um e-mail para o endereço abaixo, a partir do mesmo e-mail cadastrado na conta,
-              pedindo a exclusão. Não é preciso reinstalar nenhum app para isso.
+              <strong>Pelo app:</strong> abra o MostraAí (Produtor, Cliente ou Parceiro), vá em
+              Perfil e toque em &quot;Excluir minha conta&quot;. Você confirma com a sua senha e
+              recebe um e-mail com o pedido registrado. Quem usa o painel web também encontra essa
+              opção em &quot;Loja&quot;.
+            </p>
+            <p>
+              <strong>Por e-mail:</strong> se não conseguir acessar a conta, envie um e-mail para o
+              endereço abaixo, a partir do mesmo e-mail cadastrado, pedindo a exclusão. Não é
+              preciso reinstalar nenhum app.
             </p>
             <EmailBlock href="mailto:maaxis.tech@gmail.com">
               <Mail size={16} />
@@ -124,13 +131,26 @@ export function AccountDeletionPage() {
                 Registros de aceite de termos de uso e política de privacidade, como comprovação de
                 consentimento.
               </li>
+              <li>
+                Um código irreversível (hash) do CPF/CNPJ, que não permite identificar você e serve
+                apenas para impedir que o período de teste gratuito seja concedido mais de uma vez.
+              </li>
             </ul>
             <p>Esses registros não incluem seus dados de perfil ou catálogo, que são removidos.</p>
 
             <h2>Prazo</h2>
             <p>
-              Processamos pedidos de exclusão em até 15 dias úteis e confirmamos por e-mail assim
-              que concluído.
+              Pedidos feitos pelo app têm uma carência de 7 dias: nesse período você ainda pode
+              mudar de ideia e cancelar pelo app ou pelo link enviado por e-mail. Passado o prazo, a
+              exclusão é feita automaticamente e confirmamos por e-mail.
+            </p>
+            <p>
+              Pedidos feitos por e-mail são processados em até 15 dias úteis, com confirmação por
+              e-mail assim que concluído.
+            </p>
+            <p>
+              Atenção: excluir a conta não cancela a assinatura Premium no Google Play. Cancele a
+              assinatura pela Play Store para não ser cobrado novamente.
             </p>
           </Body>
 

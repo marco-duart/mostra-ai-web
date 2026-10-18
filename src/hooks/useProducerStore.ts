@@ -45,3 +45,30 @@ export function useDisableProducerStoreMutation() {
     onSuccess: () => qc.invalidateQueries({ queryKey: producerStoreQueryKey }),
   });
 }
+
+export const accountDeletionQueryKey = ["producer", "account-deletion"] as const;
+
+export function useAccountDeletionStatusQuery() {
+  const { isAuthenticated } = useProducerAuth();
+  return useQuery({
+    queryKey: accountDeletionQueryKey,
+    queryFn: producerService.getAccountDeletionStatus,
+    enabled: isAuthenticated,
+  });
+}
+
+export function useRequestAccountDeletionMutation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (password: string) => producerService.requestAccountDeletion(password),
+    onSuccess: () => qc.invalidateQueries({ queryKey: accountDeletionQueryKey }),
+  });
+}
+
+export function useCancelAccountDeletionMutation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => producerService.cancelAccountDeletion(),
+    onSuccess: () => qc.invalidateQueries({ queryKey: accountDeletionQueryKey }),
+  });
+}
