@@ -9,6 +9,10 @@ import { AboutPage } from "./pages/AboutPage";
 import { ContactPage } from "./pages/ContactPage";
 import { CancellationPage } from "./pages/CancellationPage";
 import { AccountDeletionPage } from "./pages/AccountDeletionPage";
+import { AccountDeletionCancelPage } from "./pages/AccountDeletionCancelPage";
+import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
+import { ResetPasswordPage } from "./pages/ResetPasswordPage";
+import { VerifyEmailPage } from "./pages/VerifyEmailPage";
 import { ProducerLoginPage } from "./pages/app/producer/ProducerLoginPage";
 import { ProducerDashboardPage } from "./pages/app/producer/ProducerDashboardPage";
 import { ProducerStorePage } from "./pages/app/producer/ProducerStorePage";
@@ -41,6 +45,10 @@ export function App() {
       <Route path="/contact" element={<ContactPage />} />
       <Route path="/cancel" element={<CancellationPage />} />
       <Route path="/account-deletion" element={<AccountDeletionPage />} />
+      <Route path="/account-deletion/cancel" element={<AccountDeletionCancelPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
+      <Route path="/verify-email" element={<VerifyEmailPage />} />
       <Route path="/:slug/mesa/:token" element={<TablePage />} />
       <Route path="/:slug/agendar" element={<ScheduleServicePage />} />
       <Route path="/:slug" element={<StorePage />} />

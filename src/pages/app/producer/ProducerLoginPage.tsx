@@ -748,6 +748,9 @@ export function ProducerLoginPage() {
                 {login.isPending ? "Entrando..." : "Entrar"}
               </ActionButton>
             </Form>
+            <ActionButton variant="ghost" onClick={() => navigate("/forgot-password")}>
+              Esqueci minha senha
+            </ActionButton>
             <ActionButton variant="ghost" onClick={() => setMode("welcome")}>
               Voltar
             </ActionButton>
