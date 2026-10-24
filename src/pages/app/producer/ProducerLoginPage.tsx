@@ -11,6 +11,7 @@ import {
   useProducerRegisterMutation,
 } from "@/hooks/useProducerAuthMutations";
 import type { DocumentType, OfferingType } from "@/types/producer";
+import { documentError } from "@/utils/document";
 
 const Wrap = styled("main", {
   minHeight: "100dvh",
@@ -502,6 +503,12 @@ export function ProducerLoginPage() {
       const nextType = registerForm.documentType || inferredType;
       if (!nextType) {
         toast.error("Selecione CPF ou CNPJ para continuar.");
+        return;
+      }
+
+      const documentProblem = documentError(clean, nextType);
+      if (documentProblem) {
+        toast.error(documentProblem);
         return;
       }
 

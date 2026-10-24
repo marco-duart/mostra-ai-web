@@ -13,6 +13,7 @@ import { useStoreCatalog } from "@/hooks/useStoreCatalog";
 import { useAvailability } from "@/hooks/useAvailability";
 import { useClientRegisterMutation, useCreateAppointmentMutation } from "@/hooks/useClientAppointmentMutations";
 import { clearClientSession, getClientToken, getClientUser, setClientSession } from "@/lib/clientAuth";
+import { documentError } from "@/utils/document";
 import { formatWhatsappHref, getStoreThemeVars, instagramHref } from "@/utils/format";
 import type { Product } from "@/types/domain";
 import type { ClientUserSummary, DocumentType } from "@/types/client";
@@ -282,6 +283,10 @@ export function ScheduleServicePage() {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(regValues.email)) errors.email = "E-mail inválido.";
     if (regValues.password.length < 6) errors.password = "Mínimo 6 caracteres.";
     if (!regValues.document.trim()) errors.document = "Informe seu CPF ou CNPJ.";
+    else {
+      const documentProblem = documentError(regValues.document, regValues.documentType);
+      if (documentProblem) errors.document = documentProblem;
+    }
     if (!regValues.acceptedAppTerms || !regValues.acceptedLgpd) {
       errors._global = "É preciso aceitar os termos e a política de privacidade pra continuar.";
     }
