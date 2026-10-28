@@ -22,6 +22,7 @@ import { ProducerLocationsPage } from "./pages/app/producer/ProducerLocationsPag
 import { ProducerTeamPage } from "./pages/app/producer/ProducerTeamPage";
 import { ProducerTablesPage } from "./pages/app/producer/ProducerTablesPage";
 import { ProducerAgendaPage } from "./pages/app/producer/ProducerAgendaPage";
+import { ProducerNovidadesPage } from "./pages/app/producer/ProducerNovidadesPage";
 import { ProducerProtectedRoute } from "./components/producer/ProducerProtectedRoute";
 
 export function App() {
@@ -38,6 +39,7 @@ export function App() {
         <Route path="team" element={<ProducerTeamPage />} />
         <Route path="tables" element={<ProducerTablesPage />} />
         <Route path="agenda" element={<ProducerAgendaPage />} />
+        <Route path="novidades" element={<ProducerNovidadesPage />} />
       </Route>
       <Route path="/privacy" element={<PrivacyPage />} />
       <Route path="/terms" element={<TermsPage />} />

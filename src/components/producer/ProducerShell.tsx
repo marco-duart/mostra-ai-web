@@ -10,6 +10,7 @@ import {
   Store,
   Users,
   QrCode,
+  Sparkles,
   Calendar,
 } from "lucide-react";
 import { styled } from "@/theme/stitches.config";
@@ -147,6 +148,7 @@ export function ProducerShell({ children }: PropsWithChildren) {
       { to: "/producer/team", label: "Equipe", icon: <Users size={16} /> },
       { to: "/producer/tables", label: "Mesas", icon: <QrCode size={16} /> },
       { to: "/producer/agenda", label: "Agenda", icon: <Calendar size={16} /> },
+      { to: "/producer/novidades", label: "Novidades", icon: <Sparkles size={16} /> },
     ],
     [],
   );

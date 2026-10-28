@@ -18,6 +18,7 @@ import { useProducerStoreQuery } from "@/hooks/useProducerStore";
 import { useProducerProductsQuery } from "@/hooks/useProducerProducts";
 import { useProducerCategoriesQuery } from "@/hooks/useProducerCategories";
 import { useProducerLocationsQuery } from "@/hooks/useProducerLocations";
+import { NovidadesBlock } from "@/components/producer/novidades/NovidadesBlock";
 
 const QuickLink = styled(Link, {
   display: "inline-block",
@@ -98,6 +99,8 @@ export function ProducerDashboardPage() {
             </QuickLink>
           </div>
         </ProducerCard>
+
+        <NovidadesBlock />
       </ProducerStack>
     </ProducerShell>
   );
