@@ -1,4 +1,5 @@
 import { api } from "@/lib/api";
+import { NOVIDADES_PATHS } from "@/lib/api-paths";
 import { getProducerAccessToken } from "@/contexts/producerAuth";
 import {
   createNovidadesTracker,
@@ -18,7 +19,7 @@ function sendEvents(events: NovidadeEvent[]) {
   // keepalive: o envio sobrevive à troca de página.
   void api
     .post(
-      "/novidades/events",
+      NOVIDADES_PATHS.events,
       { events },
       { headers: authHeaders(), adapter: "fetch", fetchOptions: { keepalive: true } },
     )
@@ -32,7 +33,7 @@ export const novidadesService = {
   /** Erro ou painel fora = lista vazia; Novidades nunca mostra erro. */
   async list(placement: ProducerWebPlacement): Promise<Novidade[]> {
     try {
-      const { data } = await api.get("/novidades", {
+      const { data } = await api.get(NOVIDADES_PATHS.list, {
         params: { placement },
         headers: authHeaders(),
       });
