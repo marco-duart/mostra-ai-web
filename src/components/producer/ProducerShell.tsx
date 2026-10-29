@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/Button";
 import { useProducerAuth } from "@/contexts/producerAuth";
 import { useProducerStoreQuery } from "@/hooks/useProducerStore";
 import { ProducerBrandLogo } from "@/components/producer/ProducerBrandLogo";
-import { getStoreThemeVars } from "@/utils/format";
+import { getStoreThemeVars, resolveCatalogLabel } from "@/utils/format";
 
 const Wrap = styled("div", {
   minHeight: "100dvh",
@@ -126,7 +126,14 @@ const StoreName = styled("small", {
 export function ProducerShell({ children }: PropsWithChildren) {
   const { store, signOut } = useProducerAuth();
   const storeQuery = useProducerStoreQuery();
-  const catalogUrl = store?.slug ? `http://mostraai.app.br/${store.slug}` : "http://mostraai.app.br";
+  // "Ver cardápio", "Ver catálogo" ou "Ver serviços", como o cliente vê a loja.
+  const profile = storeQuery.data;
+  const catalogLabel = profile
+    ? resolveCatalogLabel(profile.offeringType, profile.isConsumption)
+    : "Catálogo";
+  const catalogUrl = store?.slug
+    ? `http://mostraai.app.br/${store.slug}`
+    : "http://mostraai.app.br";
 
   // Aplica as cores de tema definidas no perfil da loja em toda a area do produtor,
   // nao apenas na pagina publica do cliente final.
@@ -161,7 +168,7 @@ export function ProducerShell({ children }: PropsWithChildren) {
             <Brand to="/producer">
               <ProducerBrandLogo size={34} variant="circle" frame="none" />
               <BrandText>
-                <BrandLabel>Painel Producer</BrandLabel>
+                <BrandLabel>Painel do lojista</BrandLabel>
                 <StoreName>{store?.name ?? "Sem loja"}</StoreName>
               </BrandText>
             </Brand>
@@ -185,7 +192,7 @@ export function ProducerShell({ children }: PropsWithChildren) {
           ))}
           <NavItem to={catalogUrl} target="_blank" rel="noreferrer">
             <Palette size={16} />
-            Ver catalogo
+            Ver {catalogLabel.toLowerCase()}
           </NavItem>
         </Sidebar>
 
